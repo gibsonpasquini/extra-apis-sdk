@@ -4,8 +4,10 @@ import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
 import br.com.extra.api.pojo.Order;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.joda.time.DateTime;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,9 +35,40 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 		return null;
 	}
 
+    /**
+     * Método utilizado para realizar a chamada ao WebService Restful que
+     * recupera uma lista de pedidos com status aprovado.
+     *
+     * GET /orders/status/approved/
+     *
+     * @param offset
+     *            Parâmetro utilizado para limitar a quantidade de registros
+     *            trazidos por página.
+     * @param limit
+     *            Parâmetro utilizado para limitar a quantidade de registros
+     *            trazidos pela operação.
+     * @return Lista de pedidos com status aprovados.
+     */
 	public List<Order> getApprovedOrders(String offset, String limit) {
-		// TODO Auto-generated method stub
-		return null;
+
+        setResource("/orders/status/approved");
+        // Parametros da requisição
+        MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
+        queryParameters.add("_offset", offset);
+        queryParameters.add("_limit", limit);
+
+        ClientResponse response = null;
+
+        response = get(queryParameters);
+
+        if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
+            // Fazer tratamento de erro adequado.
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.toString());
+        }
+
+        return null;
+
 	}
 
 	public List<Order> getSentOrders(String offset, String limit) {

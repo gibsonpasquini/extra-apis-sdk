@@ -1,8 +1,8 @@
 package br.com.extra.api.core;
 
 import com.sun.jersey.api.client.ClientResponse;
-import org.codehaus.jackson.JsonGenerationException;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.Map;
 
@@ -17,5 +17,5 @@ public interface CoreAPI {
 
 	public ClientResponse post(Map<String, Object> params) throws IOException;
 
-	public ClientResponse get(Map<String, Object> queryParams);
+	public ClientResponse get(MultivaluedMap queryParams);
 }

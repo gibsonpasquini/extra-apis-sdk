@@ -38,7 +38,7 @@ public abstract class CoreAPIImpl implements CoreAPI {
 
 
 	@SuppressWarnings("rawtypes")
-	public ClientResponse get(Map<String, Object> queryParams) {
+	public ClientResponse get(MultivaluedMap queryParams) {
 
 		Client client = Client.create();
 
@@ -58,8 +58,7 @@ public abstract class CoreAPIImpl implements CoreAPI {
 		});
 
 		@SuppressWarnings("unchecked")
-		WebResource webResource = client.resource(host + URI).queryParams(
-				(MultivaluedMap) queryParams);
+		WebResource webResource = client.resource(host + URI).queryParams(queryParams);
 
 		ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(
 				ClientResponse.class);
