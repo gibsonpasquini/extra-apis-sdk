@@ -1,5 +1,9 @@
 package br.com.extra.api.core;
 
+import com.sun.jersey.api.client.ClientResponse;
+import org.codehaus.jackson.JsonGenerationException;
+
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -9,9 +13,9 @@ import java.util.Map;
  */
 public interface CoreAPI {
 
-	public void put(Map<String, Object> params);
+	public ClientResponse put(Map<String, Object> params) throws IOException;
 
-	public void post(Map<String, Object> params);
+	public ClientResponse post(Map<String, Object> params) throws IOException;
 
-	public void get(Map<String, Object> queryParams);
+	public ClientResponse get(Map<String, Object> queryParams);
 }
