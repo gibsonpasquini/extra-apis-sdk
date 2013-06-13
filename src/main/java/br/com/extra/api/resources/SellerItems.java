@@ -21,6 +21,8 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
         // TODO Auto-generated constructor stub
     }
 
+    ClientResponse response = null;
+
     /**
      * Método utilizado para realizar a chamada ao WebService Restful que traz a
      * lista de produtos que são vendidos pelo lojista.
@@ -42,8 +44,6 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
         queryParameters.add("_offset", offset);
         queryParameters.add("_limit", limit);
 
-        ClientResponse response = null;
-
         response = get(queryParameters);
 
         if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
@@ -56,13 +56,55 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 
     }
 
+    /**
+     * Método responsável por recuperar detalhes do item do pedido por sku
+     *
+     * @param skuID Sku id do produto
+     * @return Detalhes do item
+     */
     public SellerItem getSellerItemBySkuID(String skuID) {
-        // TODO Auto-generated method stub
+
+        if (!skuID.isEmpty()) {
+            setResource("/sellerItems/" + skuID);
+        } else {
+            throw new RuntimeException(
+                    "É obrigatório passar o sku.");
+        }
+
+        response = get(null);
+
+        if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
+            // Fazer tratamento de erro adequado.
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.toString());
+        }
+
         return null;
     }
 
+    /**
+     * Método responsável por recuperar detalhes do item do pedido por sku
+     *
+     * @param skuOrigin Sku id do produto
+     * @return Detalhes do item
+     */
     public SellerItem getSellerItemBySkuOrigin(String skuOrigin) {
-        // TODO Auto-generated method stub
+
+        if (!skuOrigin.isEmpty()) {
+            setResource("/sellerItems/skuOrigin/" + skuOrigin);
+        } else {
+            throw new RuntimeException(
+                    "É obrigatório passar o sku.");
+        }
+
+        response = get(null);
+
+        if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
+            // Fazer tratamento de erro adequado.
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.toString());
+        }
+
         return null;
     }
 
@@ -83,9 +125,6 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
      *         associação do produto ao lojista.
      */
     public String postSellerItem(Map<String, Object> bodyParams) {
-
-        ClientResponse response = null;
-
 
         setResource("/sellerItems");
 
@@ -112,23 +151,18 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
     /**
      * Método utilizado para realizar a chamada ao WebService Restful que
      * atualiza a quantidade disponível para venda de um item do Lojista.
-     *
+     * <p/>
      * PUT /sellerItems/{skuId}/stock
      *
-     * @param skuId
-     *            ID do produto a venda
-     * @param availableQuantity
-     *            Quantidade disponível
-     * @param totalQuantity
-     *            Quantidade total de produtos
+     * @param skuId             ID do produto a venda
+     * @param availableQuantity Quantidade disponível
+     * @param totalQuantity     Quantidade total de produtos
      * @return Status da operação.
      */
     public String uptadeStock(String skuId, String availableQuantity,
                               String totalQuantity) {
 
         setResource("/sellerItems/" + skuId + "/stock");
-
-        ClientResponse response = null;
 
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("availableQuantity", availableQuantity);
@@ -151,10 +185,70 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
         return response.getEntity(String.class);
     }
 
+    /**
+     * Método responsável por atualizar o preços dos items
+     *
+     * @param skuId         número do sku
+     * @param defaultPrice  preço 'de'
+     * @param salePrice     preço 'por'
+     * @param installmentId parcelamento do produto
+     * @return
+     */
     public String uptadePrice(String skuId, String defaultPrice,
                               String salePrice, String installmentId) {
-        // TODO Auto-generated method stub
+
+        setResource("/sellerItems/" + skuId + "/stock");
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("defaultPrice", defaultPrice);
+        data.put("salePrice", salePrice);
+        data.put("installmentId", installmentId);
+
+        try {
+            response = put(data);
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Error while trying to execute PUT method on resource: "
+                            + super.getURL());
+        }
+
+        if (response.getStatus() != ClientResponse.Status.NO_CONTENT.ordinal()) {
+            // Fazer tratamento de erro adequado.
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.toString());
+        }
+
+        return response.getEntity(String.class);
+    }
+
+    /**
+     * Método responsável por recuperar itens do lojista que já estão disponíveis para venda relacionados com o token do lojista informado.
+     *
+     * @param offset Parâmetro utilizado para limitar a quantidade de registros
+     *               trazidos por página.
+     * @param limit  Parâmetro utilizado para limitar a quantidade de registros
+     *               trazidos pela operação.
+     * @return Lista de pedidos disponíveis para venda
+     */
+    public String getAvailableSellerItems(String offset, String limit) {
+
+        setResource("/sellerItems/status/selling");
+
+        // Parâmetros da requisição
+        MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
+        queryParameters.add("_offset", offset);
+        queryParameters.add("_limit", limit);
+
+        response = get(queryParameters);
+
+        if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
+            // Fazer tratamento de erro adequado.
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.toString());
+        }
+
         return null;
+
     }
 
 }

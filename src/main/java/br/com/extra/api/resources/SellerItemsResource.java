@@ -20,4 +20,6 @@ public interface SellerItemsResource {
 
 	public String uptadePrice(String skuId, String defaultPrice,
 			String salePrice, String installmentId);
+
+    public String getAvailableSellerItems(String offset, String limit);
 }

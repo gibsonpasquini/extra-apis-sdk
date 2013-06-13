@@ -2,6 +2,7 @@ package br.com.extra.api.resources;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import br.com.extra.api.pojo.Order;
 
@@ -35,4 +36,6 @@ public interface OrdersResource {
 
 	public String registerDelivery(String orderId, Date occurenceDt,
 			String originDeliveryID, String extraDescription);
+
+    public String updateTracking(String orderId, String orderItemId, Map<String, Object> tracking);
 }
