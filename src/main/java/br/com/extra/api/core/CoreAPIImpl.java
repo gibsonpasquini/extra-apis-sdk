@@ -17,108 +17,113 @@ import java.util.Map;
  */
 public abstract class CoreAPIImpl implements CoreAPI {
 
-    private String host;
-    private String appToken;
-    private String authToken;
-    private String URI;
+	private String host;
+	private String appToken;
+	private String authToken;
+	private String URI;
+
+	public String getURL() {
+		return this.host + this.URI;
+	}
+
+	public CoreAPIImpl(Hosts host, String appToken, String authToken) {
+		this.host = host.toString();
+		this.appToken = appToken;
+		this.authToken = authToken;
+	}
+
+	public void setResource(String URI) {
+		this.URI = URI;
+	}
 
 
-    public CoreAPIImpl(Hosts host, String appToken, String authToken) {
-        this.host = host.toString();
-        this.appToken = appToken;
-        this.authToken = authToken;
-    }
+	@SuppressWarnings("rawtypes")
+	public ClientResponse get(Map<String, Object> queryParams) {
 
-    public void setResource(String URI) {
-        this.URI = URI;
-    }
+		Client client = Client.create();
 
-    ClientResponse response = null;
+		// Headers da requisição
+		client.addFilter(new ClientFilter() {
+			@Override
+			public ClientResponse handle(final ClientRequest clientRequest)
+					throws ClientHandlerException {
 
-    public ClientResponse get(Map<String, Object> queryParams) {
+				final MultivaluedMap<String, Object> headers = clientRequest
+						.getHeaders();
+				headers.add("nova-auth-token", authToken);
+				headers.add("nova-app-token", appToken);
 
-        Client client = Client.create();
+				return getNext().handle(clientRequest);
+			}
+		});
 
-        // Headers da requisição
-        client.addFilter(new ClientFilter() {
-            @Override
-            public ClientResponse handle(final ClientRequest clientRequest)
-                    throws ClientHandlerException {
+		@SuppressWarnings("unchecked")
+		WebResource webResource = client.resource(host + URI).queryParams(
+				(MultivaluedMap) queryParams);
 
-                final MultivaluedMap<String, Object> headers = clientRequest
-                        .getHeaders();
-                headers.add("nova-auth-token", authToken);
-                headers.add("nova-app-token", appToken);
+		ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(
+				ClientResponse.class);
 
-                return getNext().handle(clientRequest);
-            }
-        });
+		return response;
+	}
 
-        WebResource webResource = client.resource(host + URI).queryParams((MultivaluedMap) queryParams);
+	public ClientResponse post(Map<String, Object> params) throws IOException {
 
-        response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(
-                ClientResponse.class);
+		Client client = Client.create();
 
-        return response;
-    }
+		// Inclusão dos headers de requisição
+		client.addFilter(new ClientFilter() {
+			@Override
+			public ClientResponse handle(final ClientRequest clientRequest)
+					throws ClientHandlerException {
 
-    public ClientResponse post(Map<String, Object> params) throws IOException {
+				final MultivaluedMap<String, Object> headers = clientRequest
+						.getHeaders();
+				headers.add("nova-auth-token", authToken);
+				headers.add("nova-app-token", appToken);
 
-        Client client = Client.create();
+				return getNext().handle(clientRequest);
+			}
+		});
 
-        // Inclusão dos headers de requisição
-        client.addFilter(new ClientFilter() {
-            @Override
-            public ClientResponse handle(final ClientRequest clientRequest)
-                    throws ClientHandlerException {
+		WebResource webResource = client.resource(host + URI);
 
-                final MultivaluedMap<String, Object> headers = clientRequest
-                        .getHeaders();
-                headers.add("nova-auth-token", authToken);
-                headers.add("nova-app-token", appToken);
+		String in = new ObjectMapper().writeValueAsString(params);
 
-                return getNext().handle(clientRequest);
-            }
-        });
+		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(
+				ClientResponse.class, in);
 
-        WebResource webResource = client.resource(host + URI);
+		return response;
+	}
 
-        String in = new ObjectMapper().writeValueAsString(params);
+	public ClientResponse put(Map<String, Object> params) throws IOException {
 
-        response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(
-                ClientResponse.class, in);
+		Client client = Client.create();
 
-        return response;
-    }
+		// Headers da requisição
+		client.addFilter(new ClientFilter() {
+			@Override
+			public ClientResponse handle(final ClientRequest clientRequest)
+					throws ClientHandlerException {
 
-    public ClientResponse put(Map<String, Object> params) throws IOException {
+				final MultivaluedMap<String, Object> headers = clientRequest
+						.getHeaders();
+				headers.add("nova-auth-token", authToken);
+				headers.add("nova-app-token", appToken);
 
-        Client client = Client.create();
+				return getNext().handle(clientRequest);
+			}
+		});
 
-        // Headers da requisição
-        client.addFilter(new ClientFilter() {
-            @Override
-            public ClientResponse handle(final ClientRequest clientRequest)
-                    throws ClientHandlerException {
+		WebResource webResource = client.resource(host + URI);
 
-                final MultivaluedMap<String, Object> headers = clientRequest
-                        .getHeaders();
-                headers.add("nova-auth-token", authToken);
-                headers.add("nova-app-token", appToken);
+		String in = new ObjectMapper().writeValueAsString(params);
 
-                return getNext().handle(clientRequest);
-            }
-        });
+		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)
+				.put(ClientResponse.class, in);
 
-        WebResource webResource = client.resource(host + URI);
+		return response;
 
-        String in = new ObjectMapper().writeValueAsString(params);
-
-        response = webResource.type(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .put(ClientResponse.class, in);
-
-        return response;
-
-    }
+	}
 }
