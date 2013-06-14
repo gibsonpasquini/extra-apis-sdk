@@ -5,6 +5,8 @@ package br.com.extra.api.core;
 
 import com.sun.jersey.api.client.*;
 import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.ws.rs.core.MediaType;
@@ -21,6 +23,8 @@ public abstract class CoreAPIImpl implements CoreAPI {
 	private String appToken;
 	private String authToken;
 	private String URI;
+	
+	private MultivaluedMap<String, String> queryParams;
 
 	public String getURL() {
 		return this.host + this.URI;
@@ -30,6 +34,7 @@ public abstract class CoreAPIImpl implements CoreAPI {
 		this.host = host.toString();
 		this.appToken = appToken;
 		this.authToken = authToken;
+		queryParams = new MultivaluedMapImpl();  
 	}
 
 	public void setResource(String URI) {
@@ -37,8 +42,7 @@ public abstract class CoreAPIImpl implements CoreAPI {
 	}
 
 
-	@SuppressWarnings("rawtypes")
-	public ClientResponse get(MultivaluedMap queryParams) {
+	public ClientResponse get() {
 
 		Client client = Client.create();
 
@@ -57,8 +61,7 @@ public abstract class CoreAPIImpl implements CoreAPI {
 			}
 		});
 
-		@SuppressWarnings("unchecked")
-		WebResource webResource = client.resource(host + URI).queryParams(queryParams);
+		WebResource webResource = client.resource(host + URI).queryParams(this.queryParams);
 
 		ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(
 				ClientResponse.class);
@@ -124,5 +127,10 @@ public abstract class CoreAPIImpl implements CoreAPI {
 
 		return response;
 
+	}
+	
+	public CoreAPI setQueryParams(MultivaluedMap<String, String> queryParams) {
+		this.queryParams = queryParams;
+		return this;
 	}
 }

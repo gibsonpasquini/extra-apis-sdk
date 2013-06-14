@@ -16,88 +16,82 @@ public class Products extends CoreAPIImpl implements ProductsResource {
 		super(host, appToken, authToken);
 	}
 
-    /**
-     * Método utilizado para realizar a chamada ao WebService Restful que
-     * executal consulta de produtos.
-     *
-     * @param offset
-     *            Parâmetro utilizado para limitar a quantidade de registros
-     *            trazidos por página.
-     * @param limit
-     *            Parâmetro utilizado para limitar a quantidade de registros
-     *            trazidos pela operação.
-     * @param searchText
-     *            Texto livre para busca de produtos.
-     * @param idCategory
-     *            ID da categoria utilizada para realizar busca de produtos.
-     *
-     * @return Lista de produtos consultada.
-     */
-	public List<Product> getProducts(String offset, String limit, String searchText, Integer idCategory) {
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * executal consulta de produtos.
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @param searchText
+	 *            Texto livre para busca de produtos.
+	 * @param idCategory
+	 *            ID da categoria utilizada para realizar busca de produtos.
+	 * 
+	 * @return Lista de produtos consultada.
+	 */
+	public List<Product> getProducts(String offset, String limit,
+			String searchText, Integer idCategory) {
 
+		setResource("/products");
 
-        setResource("/products");
+		// Parâmetros da requisição
+		MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
+		queryParameters.add("_offset", offset);
+		queryParameters.add("_limit", limit);
+		// Um dos dois parâmetros precisa ser inserido na consulta:
+		// searchText ou idCategory
+		if (searchText != null && searchText.length() == 0) {
+			queryParameters.add("searchText", searchText);
+		} else if (idCategory != null) {
+			queryParameters.add("idCategory", idCategory.toString());
+		} else {
+			throw new RuntimeException(
+					"É obrigatório inserir pelo menos um dos parâmetros: searchText ou idCategory.");
+		}
 
-        // Parâmetros da requisição
-        MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
-        queryParameters.add("_offset", offset);
-        queryParameters.add("_limit", limit);
-        // Um dos dois parâmetros precisa ser inserido na consulta:
-        // searchText ou idCategory
-        if (searchText != null && searchText.length() == 0) {
-            queryParameters.add("searchText", searchText);
-        } else if (idCategory != null) {
-            queryParameters.add("idCategory", idCategory.toString());
-        } else {
-            throw new RuntimeException(
-                    "É obrigatório inserir pelo menos um dos parâmetros: searchText ou idCategory.");
-        }
+		ClientResponse response = super.setQueryParams(queryParameters).get();
 
+		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+			// Fazer tratamento de erro adequado.
+			throw new RuntimeException("Failed : HTTP error code : "
+					+ response.toString());
+		}
 
-        ClientResponse response = null;
-
-        response = get(queryParameters);
-
-        if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
-            // Fazer tratamento de erro adequado.
-            throw new RuntimeException("Failed : HTTP error code : "
-                    + response.toString());
-        }
-
-        return null;
+		return null;
 
 	}
 
-    /**
-     * Método utilizado para realizar a chamada ao WebService Restful que
-     * consulta um produto pelo seu código SKU.
-     *
-     * GET /products/{skuId}
-     *
-     * @param skuID
-     *            ID do produto
-     * @return Produto consultado
-     */
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * consulta um produto pelo seu código SKU.
+	 * 
+	 * GET /products/{skuId}
+	 * 
+	 * @param skuID
+	 *            ID do produto
+	 * @return Produto consultado
+	 */
 	public Product getProduct(String skuID) {
 
-        if (!skuID.isEmpty() || skuID != null){
-            setResource("/products/" + skuID);
-        } else {
-            throw new RuntimeException(
-                    "É obrigatório passar o skuID.");
-        }
+		if (skuID != null && !skuID.isEmpty()) {
+			setResource("/products/" + skuID);
+		} else {
+			throw new RuntimeException("É obrigatório passar o skuID.");
+		}
 
-        ClientResponse response = null;
+		ClientResponse response = get();
 
-        response = get(null);
+		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+			// Fazer tratamento de erro adequado.
+			throw new RuntimeException("Failed : HTTP error code : "
+					+ response.toString());
+		}
 
-        if (response.getStatus() != ClientResponse.Status.OK.ordinal()) {
-            // Fazer tratamento de erro adequado.
-            throw new RuntimeException("Failed : HTTP error code : "
-                    + response.toString());
-        }
-
-        return null;
+		return null;
 	}
 
 }

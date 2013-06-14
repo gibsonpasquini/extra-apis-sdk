@@ -17,5 +17,7 @@ public interface CoreAPI {
 
 	public ClientResponse post(Map<String, Object> params) throws IOException;
 
-	public ClientResponse get(MultivaluedMap queryParams);
+	public ClientResponse get();
+
+	public CoreAPI setQueryParams(MultivaluedMap<String, String> queryParams);
 }
