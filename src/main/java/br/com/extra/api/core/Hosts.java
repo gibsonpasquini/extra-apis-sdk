@@ -1,13 +1,37 @@
 package br.com.extra.api.core;
 
+/**
+ * ExtraAPI-SDK - Hosts.java
+ * 
+ * Enum que possui os Hosts que podem ser chamados pela API.
+ * 
+ * @author Gibson Pasquini Nascimento
+ * @author Fillipe Massuda
+ * 
+ *         21/06/2013
+ */
 public enum Hosts {
 
-	SANDBOX("https://sabdbox.extra.com.br/api/v1"), 
-	PRODUCAO("https://api.extra.com.br/api/v1"), 
-	HLG("http://busapi.mp.hlg.dc.nova/api/v1");
+	/**
+	 * Host do serviço em Ambiente de Sandbox.
+	 */
+	SANDBOX("https://sabdbox.extra.com.br/api/v1"),
+	/**
+	 * Host do serviço em Ambiente de Produção.
+	 */
+	PRODUCAO("https://api.extra.com.br/api/v1");
 
+	/**
+	 * Endereço do host.
+	 */
 	private String host;
 
+	/**
+	 * Construtor que cria um Host.
+	 * 
+	 * @param host
+	 *            Endereço do serviço
+	 */
 	private Hosts(String host) {
 		this.host = host;
 	}

@@ -1,39 +1,56 @@
 package br.com.extra.api.resources;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+
+import br.com.extra.api.core.AppToken;
+import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
-import br.com.extra.api.pojo.SellerItem;
+import br.com.extra.api.pojo.sellerItems.SellerItem;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
+/**
+ * ExtraAPI-SDK - SellerItems.java
+ * 
+ * Implementação da interface do Serviço Restful /sellerItems.
+ * 
+ * Serviço que possibilita ao lojista gerenciar os seus produtos vendidos.
+ * 
+ * @author Gibson Pasquini Nascimento
+ * @author Fillipe Massuda
+ * 
+ *         21/06/2013
+ */
+public class SellerItems extends CoreAPIImpl<SellerItem> implements
+		SellerItemsResource {
 
-	public SellerItems(Hosts host, String appToken, String authToken) {
+	/**
+	 * Construtor que instancia um objeto do serviço que consome a API /sellerItems
+	 * 
+	 * @param host
+	 *            Host do serviço.
+	 * @param appToken
+	 *            Token de Aplicação.
+	 * @param authToken
+	 *            Token de Autenticação.
+	 */
+	public SellerItems(Hosts host, AppToken appToken, AuthToken authToken) {
 		super(host, appToken, authToken);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que traz a
-	 * lista de produtos que são vendidos pelo lojista.
-	 * <p/>
-	 * GET /sellerItems
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de produtos vendidos pelo lojista
+	 * {@inheritDoc}
 	 */
 	public List<SellerItem> getSellerItems(String offset, String limit) {
 
@@ -52,16 +69,25 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 					+ response.toString());
 		}
 
-		return null;
+		// List<SellerItem> sellerItems = new ArrayList<SellerItem>();
+		// try {
+		// sellerItems = new ObjectMapper().readValue(
+		// response.getEntityInputStream(),
+		// new TypeReference<List<SellerItem>>() {
+		// });
+		// } catch (IOException e) {
+		// throw new RuntimeException(
+		// "Erro ao criar o retorno da requisição: " + e.toString());
+		// }
+
+		List<SellerItem> sellerItems = getListFromResponse(response);
+
+		return sellerItems;
 
 	}
 
 	/**
-	 * Método responsável por recuperar detalhes do item do pedido por sku
-	 * 
-	 * @param skuID
-	 *            Sku id do produto
-	 * @return Detalhes do item
+	 * {@inheritDoc}
 	 */
 	public SellerItem getSellerItemBySkuID(String skuID) {
 
@@ -79,15 +105,24 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 					+ response.toString());
 		}
 
-		return null;
+		// SellerItem sellerItem = new SellerItem();
+		// try {
+		// sellerItem = new ObjectMapper().readValue(
+		// response.getEntityInputStream(),
+		// new TypeReference<SellerItem>() {
+		// });
+		// } catch (IOException e) {
+		// throw new RuntimeException(
+		// "Erro ao criar o retorno da requisição: " + e.toString());
+		// }
+
+		SellerItem sellerItem = getObjectFromResponse(response);
+
+		return sellerItem;
 	}
 
 	/**
-	 * Método responsável por recuperar detalhes do item do pedido por sku
-	 * 
-	 * @param skuOrigin
-	 *            Sku id do produto
-	 * @return Detalhes do item
+	 * {@inheritDoc}
 	 */
 	public SellerItem getSellerItemBySkuOrigin(String skuOrigin) {
 
@@ -105,38 +140,44 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 					+ response.toString());
 		}
 
-		return null;
+		SellerItem sellerItem = new SellerItem();
+		try {
+			sellerItem = new ObjectMapper().readValue(
+					response.getEntityInputStream(),
+					new TypeReference<SellerItem>() {
+					});
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"Erro ao criar o retorno da requisição: " + e.toString());
+		}
+
+		return sellerItem;
 	}
 
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que faz a
-	 * associação do produto ao lojista.
-	 * <p/>
-	 * POST /sellerItems
-	 * 
-	 * @param bodyParams
-	 *            Mapa contendo os parâmetros que precisam ser passados no body
-	 *            da requisição. Exemplo de conteúdo do mapa:
-	 *            <p/>
-	 *            { "skuOrigin": "string", "skuId": "string", "defaultPrice":
-	 *            "500.00", "salePrice": "460.00", "availableQuantity": "100",
-	 *            "installmentId": "20p3x", "totalQuantity": "250",
-	 *            "crossDockingTime": 1 }
-	 * @return Retorno da requisição, composto do status e o location da
-	 *         associação do produto ao lojista.
-	 */
-	public String postSellerItem(Map<String, Object> bodyParams) {
+	public String postSellerItem(SellerItem sellerItem) {
 
 		setResource("/sellerItems");
 
 		ClientResponse response = null;
 
 		try {
+			Map<String, Object> bodyParams = new HashMap<String, Object>();
+			bodyParams.put("skuOrigin", sellerItem.getSkuOrigin());
+			bodyParams.put("skuId", sellerItem.getSkuId());
+			bodyParams.put("defaultPrice", sellerItem.getDefaultPrice());
+			bodyParams.put("salePrice", sellerItem.getSalePrice());
+			bodyParams.put("availableQuantity",
+					sellerItem.getAvailableQuantity());
+			bodyParams.put("installmentId", sellerItem.getInstallmentId());
+			bodyParams.put("totalQuantity", sellerItem.getTotalQuantity());
+			bodyParams
+					.put("crossDockingTime", sellerItem.getCrossDockingTime());
+
 			response = post(bodyParams);
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute POST method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
@@ -151,18 +192,7 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 	}
 
 	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * atualiza a quantidade disponível para venda de um item do Lojista.
-	 * <p/>
-	 * PUT /sellerItems/{skuId}/stock
-	 * 
-	 * @param skuId
-	 *            ID do produto a venda
-	 * @param availableQuantity
-	 *            Quantidade disponível
-	 * @param totalQuantity
-	 *            Quantidade total de produtos
-	 * @return Status da operação.
+	 * {@inheritDoc}
 	 */
 	public String uptadeStock(String skuId, String availableQuantity,
 			String totalQuantity) {
@@ -179,7 +209,7 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute PUT method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
@@ -193,17 +223,7 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 	}
 
 	/**
-	 * Método responsável por atualizar o preços dos items
-	 * 
-	 * @param skuId
-	 *            número do sku
-	 * @param defaultPrice
-	 *            preço 'de'
-	 * @param salePrice
-	 *            preço 'por'
-	 * @param installmentId
-	 *            parcelamento do produto
-	 * @return
+	 * {@inheritDoc}
 	 */
 	public String uptadePrice(String skuId, String defaultPrice,
 			String salePrice, String installmentId) {
@@ -221,7 +241,7 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute PUT method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
@@ -235,18 +255,9 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 	}
 
 	/**
-	 * Método responsável por recuperar itens do lojista que já estão
-	 * disponíveis para venda relacionados com o token do lojista informado.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos disponíveis para venda
+	 * {@inheritDoc}
 	 */
-	public String getAvailableSellerItems(String offset, String limit) {
+	public List<SellerItem> getAvailableSellerItems(String offset, String limit) {
 
 		setResource("/sellerItems/status/selling");
 
@@ -263,8 +274,27 @@ public class SellerItems extends CoreAPIImpl implements SellerItemsResource {
 					+ response.toString());
 		}
 
-		return null;
+		List<SellerItem> sellerItems = new ArrayList<SellerItem>();
+		try {
+			sellerItems = new ObjectMapper().readValue(
+					response.getEntityInputStream(),
+					new TypeReference<List<SellerItem>>() {
+					});
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"Erro ao criar o retorno da requisição: " + e.toString());
+		}
 
+		return sellerItems;
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected Class<SellerItem> getPojoClass() {
+		return SellerItem.class;
 	}
 
 }

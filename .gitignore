@@ -6,7 +6,9 @@
 .project
 .metadata
 bin/
-target/
+target/maven-archiver/
+target/surefire/
+target/classes/
 tmp/
 *.tmp
 *.bak

@@ -1,35 +1,59 @@
 package br.com.extra.api.resources;
 
-import br.com.extra.api.core.CoreAPIImpl;
-import br.com.extra.api.core.Hosts;
-import br.com.extra.api.pojo.Order;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.joda.time.DateTime;
-
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Orders extends CoreAPIImpl implements OrdersResource {
+import javax.ws.rs.core.MultivaluedMap;
 
-	public Orders(Hosts host, String appToken, String authToken) {
+import org.codehaus.jackson.map.ObjectMapper;
+import org.joda.time.DateTime;
+
+import br.com.extra.api.core.AppToken;
+import br.com.extra.api.core.AuthToken;
+import br.com.extra.api.core.CoreAPIImpl;
+import br.com.extra.api.core.Hosts;
+import br.com.extra.api.pojo.orders.Order;
+import br.com.extra.api.pojo.orders.OrderItem;
+import br.com.extra.api.pojo.orders.Tracking;
+import br.com.extra.api.utils.Utils;
+
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+
+/**
+ * 
+ * ExtraAPI-SDK - Orders.java
+ * 
+ * Implementação do Serviço Restful /orders.
+ * 
+ * Serviço que possibilita ao lojista gerenciar os seus pedidos.
+ * 
+ * @author Gibson Pasquini Nascimento
+ * @author Fillipe Massuda
+ * 
+ *         22/06/2013
+ */
+public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
+
+	/**
+	 * Construtor que instancia um objeto do serviço que consome a API /orders.
+	 * 
+	 * @param host
+	 *            Host do serviço.
+	 * @param appToken
+	 *            Token de Aplicação.
+	 * @param authToken
+	 *            Token de Autenticação.
+	 */
+	public Orders(Hosts host, AppToken appToken, AuthToken authToken) {
 		super(host, appToken, authToken);
 	}
 
 	/**
-	 * Método utilizado para recupera uma lista de pedidos.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos realizados pelo lojista.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getOrders(String offset, String limit) {
 
@@ -48,17 +72,13 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método que recupera detalhes do pedido informado
-	 * 
-	 * @param orderId
-	 *            Número do pedido
-	 * @return Detalhes do pedido informado.
+	 * {@inheritDoc}
 	 */
-	public List<Order> getOrder(String orderId) {
+	public Order getOrder(String orderId) {
 
 		if (!orderId.isEmpty()) {
 			setResource("/orders/" + orderId);
@@ -75,19 +95,12 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getObjectFromResponse(response);
+
 	}
 
 	/**
-	 * Método responsável por listar os pedidos novos.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos novos
+	 * {@inheritDoc}
 	 */
 	public List<Order> getNewOrders(String offset, String limit) {
 
@@ -106,22 +119,11 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * recupera uma lista de pedidos com status aprovado.
-	 * <p/>
-	 * GET /orders/status/approved/
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos com status aprovados.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getApprovedOrders(String offset, String limit) {
 
@@ -140,20 +142,12 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 
 	}
 
 	/**
-	 * Método responsável por listas os pedidos enviados.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista com os pedidos com status sent.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getSentOrders(String offset, String limit) {
 
@@ -172,19 +166,11 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método responsável por listar os pedidos entregues
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos com o status entregue.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getDeliveredOrders(String offset, String limit) {
 
@@ -203,19 +189,11 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método responsável por listar os pedidos cancelados.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos com o status cancelado.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getCanceledOrders(String offset, String limit) {
 
@@ -234,19 +212,11 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método responsável por listar os pedidos parcialmente entregues.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos com o status parcialmente entregues.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getPartiallyDeliveredOrders(String offset, String limit) {
 
@@ -265,20 +235,11 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método responsável por retornar uma lista com os pedidos parcialmente
-	 * enviados.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos com o status parcialmente enviados.
+	 * {@inheritDoc}
 	 */
 	public List<Order> getSentPartiallyOrders(String offset, String limit) {
 
@@ -297,21 +258,11 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 					+ response.toString());
 		}
 
-		return null;
+		return getListFromResponse(response);
 	}
 
 	/**
-	 * Método responsável por atualizar a data de entrega dos itens do pedido.
-	 * 
-	 * @param orderId
-	 *            Número do pedido
-	 * @param orderDateAdjusted
-	 *            Data de atualização
-	 * @param reason
-	 *            Motivo de alteração na entrega do item
-	 * @param originDeliveryID
-	 *            Id de entrega do pedido para o lojista
-	 * @return
+	 * {@inheritDoc}
 	 */
 	public String adjustItemsDeliveredDate(String orderId,
 			Date orderDateAdjusted, String reason, String originDeliveryID) {
@@ -337,7 +288,7 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute POST method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
@@ -352,15 +303,7 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 	}
 
 	/**
-	 * Método responsável por cancelar um item em um pedido.
-	 * 
-	 * @param orderId
-	 *            Número do pedido
-	 * @param orderItemIdList
-	 *            Número do item do pedido
-	 * @param reason
-	 *            Motivo de cancelamento do item
-	 * @return
+	 * {@inheritDoc}
 	 */
 	public String requestOrderItemsCancellation(String orderId,
 			String[] orderItemIdList, String reason) {
@@ -371,14 +314,14 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("orderItemIdList", orderItemIdList);
 		data.put("reason", reason);
-		
+
 		ClientResponse response = null;
 		try {
 			response = post(data);
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute POST method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
@@ -392,13 +335,7 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 	}
 
 	/**
-	 * Método responsável por cancelar um pedido
-	 * 
-	 * @param orderId
-	 *            Número do pedido
-	 * @param reason
-	 *            Motivo do cancelamento do pedido
-	 * @return
+	 * {@inheritDoc}
 	 */
 	public String requestOrderCancellation(String orderId, String reason) {
 
@@ -414,7 +351,7 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute POST method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
@@ -428,20 +365,7 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 	}
 
 	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * registra a entrega do pedido.
-	 * <p/>
-	 * PUT /orders/{orderId}/status/delivered/
-	 * 
-	 * @param orderId
-	 *            ID do pedido.
-	 * @param occurenceDt
-	 *            Nova data de entrega d o item.
-	 * @param extraDescription
-	 *            Texto com o motivo da alteração.
-	 * @param originDeliveryID
-	 *            Id da entrega para o lojista no parceiro.
-	 * @return
+	 * {@inheritDoc}
 	 */
 	public String registerDelivery(String orderId, Date occurenceDt,
 			String originDeliveryID, String extraDescription) {
@@ -462,7 +386,7 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute PUT method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
@@ -476,30 +400,33 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 	}
 
 	/**
-	 * Método responsável por registrar uma nova operação de tracking para o
-	 * Item do Pedido informado.
-	 * 
-	 * @param orderId
-	 *            número do pedido
-	 * @param orderItemId
-	 *            número do item do pedido
-	 * @param tracking
-	 *            tracking do item
-	 * @return
+	 * {@inheritDoc}
 	 */
 	public String updateTracking(String orderId, String orderItemId,
-			Map<String, Object> tracking) {
+			Tracking tracking) {
 
 		setResource("/orders/" + orderId + "/ordersItems/" + orderItemId
 				+ "/trackings");
 
 		ClientResponse response = null;
 		try {
-			response = post(tracking);
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("accessKeyNfe", tracking.getAccessKeyNfe());
+			params.put("carrierName", tracking.getCarrierName());
+			params.put("controlPoint", tracking.getControlPoint());
+			params.put("extraDescription", tracking.getExtraDescription());
+			params.put("linkNfe", tracking.getLinkNfe());
+			params.put("nfe", tracking.getNfe());
+			params.put("objectId", tracking.getObjectId());
+			params.put("occurenceDt", tracking.getOccurenceDt());
+			params.put("originDeliveryId", tracking.getOriginDeliveryId());
+			params.put("serieNfe", tracking.getSerieNfe());
+			params.put("url", tracking.getUrl());
+			response = post(params);
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Error while trying to execute POST method on resource: "
-							+ super.getURL());
+							+ super.getURI());
 		}
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
@@ -511,5 +438,45 @@ public class Orders extends CoreAPIImpl implements OrdersResource {
 
 		return response.getEntity(String.class);
 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public OrderItem getOrderItem(String orderId, String orderItemId) {
+		if (!Utils.isEmpty(orderId)
+				&& !Utils.isEmpty(orderItemId)) {
+			setResource("/orders/" + orderId + "/orderItems/" + orderItemId);
+		} else {
+			throw new RuntimeException(
+					"É obrigatório passar o número do pedido e o número do item.");
+		}
+
+		ClientResponse response = get();
+
+		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+			// Fazer tratamento de erro adequado.
+			throw new RuntimeException("Failed : HTTP error code : "
+					+ response.toString());
+		}
+
+		OrderItem orderItem = new OrderItem();
+		try {
+			orderItem = new ObjectMapper().readValue(
+					response.getEntityInputStream(), OrderItem.class);
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"Erro ao criar o retorno da requisição: " + e.toString());
+		}
+
+		return orderItem;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected Class<Order> getPojoClass() {
+		return Order.class;
 	}
 }

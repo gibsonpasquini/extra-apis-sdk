@@ -2,36 +2,39 @@ package br.com.extra.api.resources;
 
 import java.util.List;
 
+import javax.ws.rs.core.MultivaluedMap;
+
+import br.com.extra.api.core.AppToken;
+import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
-import br.com.extra.api.pojo.Product;
+import br.com.extra.api.pojo.products.Product;
+
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-import javax.ws.rs.core.MultivaluedMap;
+/**
+ * 
+ * ExtraAPI-SDK - Products.java
+ * 
+ * Implementação do Serviço Restful /products.
+ * 
+ * Serviço que possibilita ao lojista consultar os produtos existentes no
+ * Marketplace.
+ * 
+ * @author Gibson Pasquini Nascimento
+ * @author Fillipe Massuda
+ * 
+ *         22/06/2013
+ */
+public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 
-public class Products extends CoreAPIImpl implements ProductsResource {
-
-	public Products(Hosts host, String appToken, String authToken) {
+	public Products(Hosts host, AppToken appToken, AuthToken authToken) {
 		super(host, appToken, authToken);
 	}
 
 	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * executal consulta de produtos.
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @param searchText
-	 *            Texto livre para busca de produtos.
-	 * @param idCategory
-	 *            ID da categoria utilizada para realizar busca de produtos.
-	 * 
-	 * @return Lista de produtos consultada.
+	 * {@inheritDoc}
 	 */
 	public List<Product> getProducts(String offset, String limit,
 			String searchText, Integer idCategory) {
@@ -44,7 +47,7 @@ public class Products extends CoreAPIImpl implements ProductsResource {
 		queryParameters.add("_limit", limit);
 		// Um dos dois parâmetros precisa ser inserido na consulta:
 		// searchText ou idCategory
-		if (searchText != null && searchText.length() == 0) {
+		if (searchText != null && searchText.length() > 0) {
 			queryParameters.add("searchText", searchText);
 		} else if (idCategory != null) {
 			queryParameters.add("idCategory", idCategory.toString());
@@ -60,20 +63,14 @@ public class Products extends CoreAPIImpl implements ProductsResource {
 			throw new RuntimeException("Failed : HTTP error code : "
 					+ response.toString());
 		}
+		List<Product> products = getListFromResponse(response);
 
-		return null;
+		return products;
 
 	}
 
 	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * consulta um produto pelo seu código SKU.
-	 * 
-	 * GET /products/{skuId}
-	 * 
-	 * @param skuID
-	 *            ID do produto
-	 * @return Produto consultado
+	 * {@inheritDoc}
 	 */
 	public Product getProduct(String skuID) {
 
@@ -91,7 +88,13 @@ public class Products extends CoreAPIImpl implements ProductsResource {
 					+ response.toString());
 		}
 
-		return null;
+		Product product = getObjectFromResponse(response);
+		return product;
+	}
+
+	@Override
+	protected Class<Product> getPojoClass() {
+		return Product.class;
 	}
 
 }
