@@ -30,15 +30,17 @@ Para utilizar a API do Extra, é necessário seguir os passos descritos em [Port
 
 ### Instalação por Dependências do Maven
 
-Há duas formas de instalar através do Maven:.
-1. Importando e compilando o projeto para seu computador:.
-1.1. Baixe o projeto e execute na sua raiz o seguinte comando para criar o jar
+Há duas formas de instalar através do Maven:
+
+- Importando e compilando o projeto para seu computador:
+
+Baixe o projeto e execute na sua raiz o seguinte comando para criar o jar
 
   ```bash
       $ mvn install
   ```
 
-1.2. Adicionar a dependência da SDK em seu projeto
+Adicionar a dependência da SDK em seu projeto
 
 ```bash
 <dependency>
@@ -47,9 +49,11 @@ Há duas formas de instalar através do Maven:.
   <version>1.0</version>
 </dependency>
 ```
-2. Instalando o jar da SDK no seu repositório maven local:.
-2.1. Faça download do arquivo jar `extra-apis-sdk-1.0.jar` que se encontra na pasta `/target` para seu projeto.
-2.2. Execute o seguinte comando para adicionar o projeto ao maven local:
+- Instalando o jar da SDK no seu repositório maven local:
+
+Faça download do arquivo jar `extra-apis-sdk-1.0.jar` que se encontra na pasta `/target` para seu projeto
+
+Execute o seguinte comando para adicionar o projeto ao maven local:
 
 ```bash
 mvn install:install-file -Dfile=<DIRETORIO>\extra-apis-sdk-1.0.jar
