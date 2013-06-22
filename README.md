@@ -34,32 +34,31 @@ Há duas formas de instalar através do Maven:
 
 - Importando e compilando o projeto para seu computador:
 
-Baixe o projeto e execute na sua raiz o seguinte comando para criar o jar
+ * Baixe o projeto e execute na sua raiz o seguinte comando para criar o jar:
 
   ```bash
       $ mvn install
   ```
 
-Adicionar a dependência da SDK em seu projeto
+ * Adicionar a dependência da SDK em seu projeto:
 
-```bash
-<dependency>
-  <groupId>br.com.extra.api</groupId>
-  <artifactId>ExtraAPI-SDK</artifactId>
-  <version>1.0</version>
-</dependency>
-```
+  ```bash
+      <dependency>
+        <groupId>br.com.extra.api</groupId>
+        <artifactId>ExtraAPI-SDK</artifactId>
+        <version>1.0</version>
+      </dependency>
+  ```
 - Instalando o jar da SDK no seu repositório maven local:
 
-Faça download do arquivo jar `extra-apis-sdk-1.0.jar` que se encontra na pasta `/target` para seu projeto
+ * Faça download do arquivo jar `extra-apis-sdk-1.0.jar` que se encontra na pasta `/target` para seu projeto
 
-Execute o seguinte comando para adicionar o projeto ao maven local:
+ * Execute o seguinte comando para adicionar o projeto ao maven local:
 
-```bash
-mvn install:install-file -Dfile=<DIRETORIO>\extra-apis-sdk-1.0.jar
--DgroupId=br.com.extra.api
--DartifactId=ExtraAPI-SDK
--Dversion=1.0  
--Dpackaging=jar
+  ```bash
+      mvn install:install-file -Dfile=<DIRETORIO>/extra-apis-sdk-1.0.jar
+      -DgroupId=br.com.extra.api
+      -DartifactId=ExtraAPI-SDK
+      -Dversion=1.0  
+      -Dpackaging=jar
 ```
-
