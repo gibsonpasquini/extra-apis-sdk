@@ -37,6 +37,22 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 	 * {@inheritDoc}
 	 */
 	public List<Product> getProducts(String offset, String limit,
+			String searchText) {
+		return this.getProducts(offset, limit, searchText, null);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<Product> getProducts(String offset, String limit,
+			Integer idCategory) {
+		return this.getProducts(offset, limit, null, idCategory);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<Product> getProducts(String offset, String limit,
 			String searchText, Integer idCategory) {
 
 		setResource("/products");

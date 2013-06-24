@@ -22,6 +22,46 @@ public interface ProductsResource {
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * executa a consulta de produtos por texto de busca livre.
+	 * <p/>
+	 * GET /products
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @param searchText
+	 *            Texto livre para busca de produtos.
+	 * 
+	 * @return Lista de produtos consultada.
+	 */
+	public List<Product> getProducts(String offset, String limit,
+			String searchText);
+	
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * executa a consulta de produtos por ID da categoria.
+	 * <p/>
+	 * GET /products
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @param idCategory
+	 *            ID da categoria utilizada para realizar busca de produtos.
+	 * 
+	 * @return Lista de produtos consultada.
+	 */
+	public List<Product> getProducts(String offset, String limit,
+			Integer idCategory);
+	
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
 	 * executa a consulta de produtos.
 	 * <p/>
 	 * GET /products
