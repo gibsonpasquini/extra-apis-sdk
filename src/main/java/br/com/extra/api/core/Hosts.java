@@ -15,11 +15,15 @@ public enum Hosts {
 	/**
 	 * Host do serviço em Ambiente de Sandbox.
 	 */
-	SANDBOX("https://sabdbox.extra.com.br/api/v1"),
+	SANDBOX("https://sandbox.extra.com.br/api/v1"),
 	/**
 	 * Host do serviço em Ambiente de Produção.
 	 */
-	PRODUCAO("https://api.extra.com.br/api/v1");
+	PRODUCAO("https://api.extra.com.br/api/v1"),
+	/**
+	 * Host do serviço em Homologação.
+	 */
+	HLG("https://busaip.mp.hlg.dc.nova/api/v1");
 
 	/**
 	 * Endereço do host.
