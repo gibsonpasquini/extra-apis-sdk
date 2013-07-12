@@ -220,7 +220,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	 */
 	public List<Order> getPartiallyDeliveredOrders(String offset, String limit) {
 
-		setResource("/orders/status/partiallydelivered/");
+		setResource("/orders/status/partiallyDelivered/");
 
 		// Parâmetros da requisição
 		MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
@@ -243,7 +243,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	 */
 	public List<Order> getSentPartiallyOrders(String offset, String limit) {
 
-		setResource("/orders/status/sentpartially");
+		setResource("/orders/status/sentPartially");
 
 		// Parâmetros da requisição
 		MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
