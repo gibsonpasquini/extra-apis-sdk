@@ -9,7 +9,7 @@ import br.com.extra.api.pojo.orders.Tracking;
 
 /**
  * 
- * ExtraAPI-SDK - OrdersResource.java Interface do Serviço Restful /sellerItems.
+ * ExtraAPI-SDK - OrdersResource.java
  * 
  * Interface do Serviço Restful /orders.
  * 

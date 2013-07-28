@@ -36,7 +36,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 		SellerItemsResource {
 
 	/**
-	 * Construtor que instancia um objeto do serviço que consome a API /sellerItems
+	 * Construtor que instancia um objeto do serviço que consome a API
+	 * /sellerItems
 	 * 
 	 * @param host
 	 *            Host do serviço.
@@ -187,15 +188,18 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 					+ response.toString());
 		}
 
-		return response.getEntity(String.class);
+		String resp = response.getStatus() + " - "
+				+ response.getClientResponseStatus().getReasonPhrase()
+				+ " location: " + response.getLocation();
+		return resp;
 
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String uptadeStock(String skuId, String availableQuantity,
-			String totalQuantity) {
+	public String uptadeStock(String skuId, Integer availableQuantity,
+			Integer totalQuantity) {
 
 		setResource("/sellerItems/" + skuId + "/stock");
 
@@ -219,16 +223,17 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 					+ response.toString());
 		}
 
-		return response.getEntity(String.class);
+		return response.getClientResponseStatus().getStatusCode() + " - "
+				+ response.getClientResponseStatus().name();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String uptadePrice(String skuId, String defaultPrice,
-			String salePrice, String installmentId) {
+	public String uptadePrice(String skuId, Double defaultPrice,
+			Double salePrice, String installmentId) {
 
-		setResource("/sellerItems/" + skuId + "/stock");
+		setResource("/sellerItems/" + skuId + "/prices");
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("defaultPrice", defaultPrice);
@@ -251,7 +256,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 					+ response.toString());
 		}
 
-		return response.getEntity(String.class);
+		return response.getClientResponseStatus().getStatusCode() + " - "
+				+ response.getClientResponseStatus().name();
 	}
 
 	/**

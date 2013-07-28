@@ -34,13 +34,14 @@ public interface CoreAPI {
 	 * Método POST.
 	 * 
 	 * @param params
-	 *            Mapa contendo os parâmetros que serão incluídos no corpo da
+	 *            Objeto contendo os parâmetros que serão incluídos no corpo da
 	 *            requisição.
 	 * @return Objeto contendo o retorno da requisição.
 	 * @throws IOException
 	 *             Exceção lançada caso haja problemas com a chamada.
 	 */
-	public ClientResponse post(Map<String, Object> params) throws IOException;
+	public ClientResponse post(Object params) throws IOException;
+	
 
 	/**
 	 * Método GET.

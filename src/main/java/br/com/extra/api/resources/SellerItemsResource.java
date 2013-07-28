@@ -97,8 +97,8 @@ public interface SellerItemsResource {
 	 *            Quantidade total de produtos.
 	 * @return Status da operação.
 	 */
-	public String uptadeStock(String skuId, String availableQuantity,
-			String totalQuantity);
+	public String uptadeStock(String skuId, Integer availableQuantity,
+			Integer totalQuantity);
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
@@ -117,8 +117,8 @@ public interface SellerItemsResource {
 	 *            Parcelamento do produto.
 	 * @return Status da operação.
 	 */
-	public String uptadePrice(String skuId, String defaultPrice,
-			String salePrice, String installmentId);
+	public String uptadePrice(String skuId, Double defaultPrice,
+			Double salePrice, String installmentId);
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que

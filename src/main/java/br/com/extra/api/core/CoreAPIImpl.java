@@ -13,6 +13,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import br.com.extra.api.pojo.Pojos;
+import br.com.extra.api.utils.Utils;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -32,7 +33,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
  * 
  *         21/06/2013
  */
-public abstract class CoreAPIImpl<T extends Pojos> implements CoreAPI {
+public abstract class CoreAPIImpl<T extends Pojos> {
 
 	/**
 	 * Endereço principal do serviço.<br/>
@@ -63,6 +64,11 @@ public abstract class CoreAPIImpl<T extends Pojos> implements CoreAPI {
 	private MultivaluedMap<String, String> queryParams;
 
 	/**
+	 * Tipo de media da requisição;
+	 */
+	private String mediaType;
+
+	/**
 	 * Construtor que cria uma instância do serviço.
 	 * 
 	 * @param host
@@ -80,26 +86,9 @@ public abstract class CoreAPIImpl<T extends Pojos> implements CoreAPI {
 	}
 
 	/**
-	 * Método que recupera o endereço do serviço.
+	 * Método GET.
 	 * 
-	 * @return Endereço completo do serviço.
-	 */
-	public String getURI() {
-		return this.host + this.resource;
-	}
-
-	/**
-	 * Método utilizado para setar o serviço que será invocado.
-	 * 
-	 * @param resource
-	 *            Caminho do serviço.
-	 */
-	public void setResource(String resource) {
-		this.resource = resource;
-	}
-
-	/**
-	 * {@inheritDoc}
+	 * @return Objeto contendo o retorno da requisição.
 	 */
 	public ClientResponse get() {
 
@@ -110,78 +99,30 @@ public abstract class CoreAPIImpl<T extends Pojos> implements CoreAPI {
 		WebResource webResource = client.resource(host + resource).queryParams(
 				this.queryParams);
 		// Invocação do serviço
-		ClientResponse response = webResource.accept(
-				MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		ClientResponse response = webResource.accept(getMediaType()).get(
+				ClientResponse.class);
 
 		return response;
 	}
 
 	/**
-	 * {@inheritDoc}
-	 */
-	public ClientResponse post(Map<String, Object> params) throws IOException {
-
-		Client client = Client.create();
-		// Inclusão dos headers de requisição
-		client.addFilter(this.getFilter());
-		// Criação do serviço
-		WebResource webResource = client.resource(host + resource);
-		// Criação do objeto JSON com os parâmetros
-		String in = new ObjectMapper().writeValueAsString(params);
-		// Invocação do serviço
-		ClientResponse response = webResource.type(
-				MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, in);
-
-		return response;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public ClientResponse put(Map<String, Object> params) throws IOException {
-
-		Client client = Client.create();
-		// Headers da requisição
-		client.addFilter(getFilter());
-		// Criação do serviço
-		WebResource webResource = client.resource(host + resource);
-		// Criação do objeto JSON com os parâmetros
-		String in = new ObjectMapper().writeValueAsString(params);
-		// Invocação do serviço
-		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)
-				.put(ClientResponse.class, in);
-
-		return response;
-
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public CoreAPI setQueryParams(MultivaluedMap<String, String> queryParams) {
-		this.queryParams = queryParams;
-		return this;
-	}
-
-	/**
-	 * Método que recupera do response o objeto que deverá ser retornado.
+	 * Método que cria o filtro contendo os tokens no header.
 	 * 
-	 * @param response
-	 *            Response da requisição realizada.
-	 * @return <T> Objeto criado de acordo com o tipo definido nas classes dos
-	 *         serviços.
+	 * @return Filtro com os tokens.
 	 */
-	protected T getObjectFromResponse(ClientResponse response) {
-		T pojo = null;
-		try {
-			pojo = new ObjectMapper().readValue(
-					response.getEntityInputStream(), getPojoClass());
-		} catch (IOException e) {
-			throw new RuntimeException(
-					"Erro ao criar o retorno da requisição: " + e.toString());
-		}
-		return pojo;
+	private ClientFilter getFilter() {
+		return new ClientFilter() {
+			@Override
+			public ClientResponse handle(final ClientRequest clientRequest)
+					throws ClientHandlerException {
+				// Criação do mapa para inclusão de parâmetros do header
+				final MultivaluedMap<String, Object> headers = clientRequest
+						.getHeaders();
+				headers.add("nova-auth-token", authToken);
+				headers.add("nova-app-token", appToken);
+				return getNext().handle(clientRequest);
+			}
+		};
 	}
 
 	/**
@@ -207,23 +148,35 @@ public abstract class CoreAPIImpl<T extends Pojos> implements CoreAPI {
 	}
 
 	/**
-	 * Método que cria o filtro contendo os tokens no header.
+	 * Método utilizado para recuperar o MediaType do Request
 	 * 
-	 * @return Filtro com os tokens.
+	 * @return MediaType informado ou APPLICATION_JSON_TYPE.toString() como
+	 *         padrão
 	 */
-	private ClientFilter getFilter() {
-		return new ClientFilter() {
-			@Override
-			public ClientResponse handle(final ClientRequest clientRequest)
-					throws ClientHandlerException {
-				// Criação do mapa para inclusão de parâmetros do header
-				final MultivaluedMap<String, Object> headers = clientRequest
-						.getHeaders();
-				headers.add("nova-auth-token", authToken);
-				headers.add("nova-app-token", appToken);
-				return getNext().handle(clientRequest);
-			}
-		};
+	private String getMediaType() {
+		String type = Utils.isEmpty(mediaType) ? MediaType.APPLICATION_JSON_TYPE
+				.toString() : this.mediaType;
+		return type;
+	}
+
+	/**
+	 * Método que recupera do response o objeto que deverá ser retornado.
+	 * 
+	 * @param response
+	 *            Response da requisição realizada.
+	 * @return <T> Objeto criado de acordo com o tipo definido nas classes dos
+	 *         serviços.
+	 */
+	protected T getObjectFromResponse(ClientResponse response) {
+		T pojo = null;
+		try {
+			pojo = new ObjectMapper().readValue(
+					response.getEntityInputStream(), getPojoClass());
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"Erro ao criar o retorno da requisição: " + e.toString());
+		}
+		return pojo;
 	}
 
 	/**
@@ -234,5 +187,111 @@ public abstract class CoreAPIImpl<T extends Pojos> implements CoreAPI {
 	 * @return Classe para conversão.
 	 */
 	protected abstract Class<T> getPojoClass();
+
+	/**
+	 * Método que recupera o endereço do serviço.
+	 * 
+	 * @return Endereço completo do serviço.
+	 */
+	public String getURI() {
+		return this.host + this.resource;
+	}
+
+	/**
+	 * Método POST.
+	 * 
+	 * @param params
+	 *            Objeto contendo os parâmetros que serão incluídos no corpo da
+	 *            requisição.
+	 * @return Objeto contendo o retorno da requisição.
+	 * @throws IOException
+	 *             Exceção lançada caso haja problemas com a chamada.
+	 */
+	public ClientResponse post(Object params) throws IOException {
+
+		Client client = Client.create();
+		// Inclusão dos headers de requisição
+		client.addFilter(this.getFilter());
+		// Criação do serviço
+		WebResource webResource = client.resource(host + resource);
+
+		Object input = null;
+		if (params instanceof Map) {
+			// Criação do objeto JSON com os parâmetros quando for enviado um
+			// Mapa
+			input = new ObjectMapper().writeValueAsString(params);
+		} else {
+			input = params;
+		}
+
+		// Invocação do serviço
+		ClientResponse response = webResource.type(getMediaType()).post(
+				ClientResponse.class, input);
+
+		return response;
+	}
+
+	/**
+	 * Método PUT.
+	 * 
+	 * @param params
+	 *            Mapa contendo os parâmetros que serão incluídos no corpo da
+	 *            requisição.
+	 * @return Objeto contendo o retorno da requisição.
+	 * @throws IOException
+	 *             Exceção lançada caso haja problemas com a chamada.
+	 */
+	public ClientResponse put(Map<String, Object> params) throws IOException {
+
+		Client client = Client.create();
+		// Headers da requisição
+		client.addFilter(getFilter());
+		// Criação do serviço
+		WebResource webResource = client.resource(host + resource);
+		// Criação do objeto JSON com os parâmetros
+		String in = new ObjectMapper().writeValueAsString(params);
+		// Invocação do serviço
+		ClientResponse response = webResource.type(getMediaType())
+				.accept(getMediaType()).put(ClientResponse.class, in);
+
+		return response;
+
+	}
+
+	/**
+	 * Método utilizado para setar parâmetros que devem ser incluídos na
+	 * queryString da operação GET
+	 * 
+	 * @param queryParams
+	 *            Mapa de parâmetros para a queryString
+	 * @return Instância atual da classe.
+	 */
+	public CoreAPIImpl<T> setQueryParams(
+			MultivaluedMap<String, String> queryParams) {
+		this.queryParams = queryParams;
+		return this;
+	}
+
+	/**
+	 * Método utilizado para setar o tipo de media da requisição.
+	 * 
+	 * @param mediaType
+	 *            Tipo de media
+	 * @return Instância atual da classe.
+	 */
+	public CoreAPIImpl<T> setMediaType(String mediaType) {
+		this.mediaType = mediaType;
+		return this;
+	}
+
+	/**
+	 * Método utilizado para setar o serviço que será invocado.
+	 * 
+	 * @param resource
+	 *            Caminho do serviço.
+	 */
+	public void setResource(String resource) {
+		this.resource = resource;
+	}
 
 }
