@@ -2,6 +2,7 @@ package br.com.extra.api.resources;
 
 import java.util.List;
 
+import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.products.Product;
 
 /**
@@ -22,24 +23,36 @@ public interface ProductsResource {
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * executa a consulta de produtos por texto de busca livre.
+	 * consulta um produto pelo seu código do produto.
 	 * <p/>
-	 * GET /products
+	 * GET /products/{productId}
 	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @param searchText
-	 *            Texto livre para busca de produtos.
-	 * 
-	 * @return Lista de produtos consultada.
+	 * @param productID
+	 *            ID do produto.
+	 * @return Produto consultado. Será retornado null caso o produto consultado
+	 *         não exista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<Product> getProducts(String offset, String limit,
-			String searchText);
-	
+	public Product getProduct(String productID) throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * consulta um produto pelo seu código SKU.
+	 * <p/>
+	 * GET /products/sku/{skuId}
+	 * 
+	 * @param skuID
+	 *            SKU ID do produto no Marketplace.
+	 * @return Produto consultado. Será retornado null caso o produto consultado
+	 *         não exista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public Product getProductBySkuId(String skuID) throws ServiceException;
+
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
 	 * executa a consulta de produtos por ID da categoria.
@@ -56,10 +69,36 @@ public interface ProductsResource {
 	 *            ID da categoria utilizada para realizar busca de produtos.
 	 * 
 	 * @return Lista de produtos consultada.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public List<Product> getProducts(String offset, String limit,
-			Integer idCategory);
-	
+			Integer idCategory) throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * executa a consulta de produtos por texto de busca livre.
+	 * <p/>
+	 * GET /products
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @param searchText
+	 *            Texto livre para busca de produtos.
+	 * 
+	 * @return Lista de produtos consultada.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public List<Product> getProducts(String offset, String limit,
+			String searchText) throws ServiceException;
+
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
 	 * executa a consulta de produtos.
@@ -77,20 +116,12 @@ public interface ProductsResource {
 	 * @param idCategory
 	 *            ID da categoria utilizada para realizar busca de produtos.
 	 * 
-	 * @return Lista de produtos consultada.
+	 * @return Lista de produtos consultada. A lista será retornada vazia caso
+	 *         não haja resultados.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public List<Product> getProducts(String offset, String limit,
-			String searchText, Integer idCategory);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * consulta um produto pelo seu código SKU.
-	 * <p/>
-	 * GET /products/{skuId}
-	 * 
-	 * @param skuID
-	 *            SKU ID do produto no Marketplace.
-	 * @return Produto consultado.
-	 */
-	public Product getProduct(String skuID);
+			String searchText, Integer idCategory) throws ServiceException;
 }

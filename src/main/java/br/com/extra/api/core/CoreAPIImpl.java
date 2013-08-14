@@ -4,6 +4,7 @@
 package br.com.extra.api.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 import br.com.extra.api.pojo.Pojos;
 import br.com.extra.api.utils.Utils;
@@ -120,6 +122,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 						.getHeaders();
 				headers.add("nova-auth-token", authToken);
 				headers.add("nova-app-token", appToken);
+				headers.add("Host", "sandbox.extra.com.br");
 				return getNext().handle(clientRequest);
 			}
 		};
@@ -133,13 +136,19 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 *            Response da requisição realizada.
 	 * @return <T> Lista de objetos criada de acordo com o tipo definido nas
 	 *         classes dos serviços.
+	 * @throws IOException
+	 * @deprecated - Esta operação não está sendo utilizada devido um problema
+	 *             na tipagem da lista de retorno.
 	 */
-	@SuppressWarnings("unchecked")
-	protected List<T> getListFromResponse(ClientResponse response) {
-		List<T> pojos = null;
+	@Deprecated
+	protected List<T> getListFromResponse(ClientResponse response)
+			throws IOException {
+		List<T> pojos = new ArrayList<T>();
 		try {
 			pojos = new ObjectMapper().readValue(
-					response.getEntityInputStream(), List.class);
+					response.getEntityInputStream(),
+					new TypeReference<List<T>>() {
+					});
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Erro ao criar o retorno da requisição: " + e.toString());
@@ -166,15 +175,17 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 *            Response da requisição realizada.
 	 * @return <T> Objeto criado de acordo com o tipo definido nas classes dos
 	 *         serviços.
+	 * @throws IOException
+	 *             Exceção lançada no parse da lista de retorno.
 	 */
-	protected T getObjectFromResponse(ClientResponse response) {
+	protected T getObjectFromResponse(ClientResponse response)
+			throws IOException {
 		T pojo = null;
 		try {
 			pojo = new ObjectMapper().readValue(
 					response.getEntityInputStream(), getPojoClass());
 		} catch (IOException e) {
-			throw new RuntimeException(
-					"Erro ao criar o retorno da requisição: " + e.toString());
+			throw e;
 		}
 		return pojo;
 	}
@@ -259,6 +270,18 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	}
 
 	/**
+	 * Método utilizado para setar o tipo de media da requisição.
+	 * 
+	 * @param mediaType
+	 *            Tipo de media
+	 * @return Instância atual da classe.
+	 */
+	public CoreAPIImpl<T> setMediaType(String mediaType) {
+		this.mediaType = mediaType;
+		return this;
+	}
+
+	/**
 	 * Método utilizado para setar parâmetros que devem ser incluídos na
 	 * queryString da operação GET
 	 * 
@@ -269,18 +292,6 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	public CoreAPIImpl<T> setQueryParams(
 			MultivaluedMap<String, String> queryParams) {
 		this.queryParams = queryParams;
-		return this;
-	}
-
-	/**
-	 * Método utilizado para setar o tipo de media da requisição.
-	 * 
-	 * @param mediaType
-	 *            Tipo de media
-	 * @return Instância atual da classe.
-	 */
-	public CoreAPIImpl<T> setMediaType(String mediaType) {
-		this.mediaType = mediaType;
 		return this;
 	}
 

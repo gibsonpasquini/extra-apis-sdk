@@ -1,14 +1,21 @@
 package br.com.extra.api.resources;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 import br.com.extra.api.core.AppToken;
 import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
+import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.products.Product;
+import br.com.extra.api.utils.Utils;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -29,15 +36,120 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
  */
 public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 
+	/**
+	 * Construtor que instancia um objeto do serviço que consome a API
+	 * /products.
+	 * 
+	 * @param host
+	 *            Host do serviço.
+	 * @param appToken
+	 *            Token de Aplicação.
+	 * @param authToken
+	 *            Token de Autenticação.
+	 */
 	public Products(Hosts host, AppToken appToken, AuthToken authToken) {
 		super(host, appToken, authToken);
+	}
+
+	/**
+	 * Método que recupera do response uma lista de objeto que deverá ser
+	 * retornado.
+	 * 
+	 * @param response
+	 *            Response da requisição realizada.
+	 * @return Lista de objetos produtos.
+	 * @throws IOException
+	 *             Exceção lançada no parse da lista de retorno.
+	 */
+	protected List<Product> getListFromResponse(ClientResponse response)
+			throws IOException {
+		List<Product> pojos = new ArrayList<Product>();
+		try {
+			pojos = new ObjectMapper().readValue(
+					response.getEntityInputStream(),
+					new TypeReference<List<Product>>() {
+					});
+		} catch (IOException e) {
+			throw e;
+		}
+		return pojos;
+	}
+
+	@Override
+	protected Class<Product> getPojoClass() {
+		return Product.class;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Product getProduct(String productID) throws ServiceException {
+
+		if (!Utils.isEmpty(productID)) {
+			setResource("/products/" + productID);
+		} else {
+			throw new ServiceException("Parameter productId is mandatory.");
+		}
+
+		ClientResponse response = get();
+		Product product = null;
+
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				product = getObjectFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
+		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
+				.getStatusCode()) {
+			String message = response.getStatus() + " - "
+					+ response.getClientResponseStatus().getReasonPhrase();
+			throw new ServiceException(message);
+		}
+
+		return product;
+	}
+
+	public Product getProductBySkuId(String skuID) throws ServiceException {
+
+		if (!Utils.isEmpty(skuID)) {
+			setResource("/products/sku/" + skuID);
+		} else {
+			throw new ServiceException("Parameter skuId is mandatory.");
+		}
+
+		ClientResponse response = get();
+		Product product = null;
+
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				product = getObjectFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
+		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
+				.getStatusCode()) {
+			String message = response.getStatus() + " - "
+					+ response.getClientResponseStatus().getReasonPhrase();
+			throw new ServiceException(message);
+		}
+
+		return product;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public List<Product> getProducts(String offset, String limit,
-			String searchText) {
+			Integer idCategory) throws ServiceException {
+		return this.getProducts(offset, limit, null, idCategory);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<Product> getProducts(String offset, String limit,
+			String searchText) throws ServiceException {
 		return this.getProducts(offset, limit, searchText, null);
 	}
 
@@ -45,15 +157,7 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 	 * {@inheritDoc}
 	 */
 	public List<Product> getProducts(String offset, String limit,
-			Integer idCategory) {
-		return this.getProducts(offset, limit, null, idCategory);
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	public List<Product> getProducts(String offset, String limit,
-			String searchText, Integer idCategory) {
+			String searchText, Integer idCategory) throws ServiceException {
 
 		setResource("/products");
 
@@ -68,49 +172,22 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 		} else if (idCategory != null) {
 			queryParameters.add("idCategory", idCategory.toString());
 		} else {
-			throw new RuntimeException(
-					"É obrigatório inserir pelo menos um dos parâmetros: searchText ou idCategory.");
+			throw new ServiceException(
+					"At least one parameter must be informed for this service: searchText or idCategory.");
 		}
 
 		ClientResponse response = super.setQueryParams(queryParameters).get();
-
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
+		List<Product> products = new ArrayList<Product>();
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				products = getListFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
 		}
-		List<Product> products = getListFromResponse(response);
 
 		return products;
 
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Product getProduct(String skuID) {
-
-		if (skuID != null && !skuID.isEmpty()) {
-			setResource("/products/" + skuID);
-		} else {
-			throw new RuntimeException("É obrigatório passar o skuID.");
-		}
-
-		ClientResponse response = get();
-
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
-		}
-
-		Product product = getObjectFromResponse(response);
-		return product;
-	}
-
-	@Override
-	protected Class<Product> getPojoClass() {
-		return Product.class;
 	}
 
 }

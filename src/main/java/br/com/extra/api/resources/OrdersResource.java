@@ -3,6 +3,7 @@ package br.com.extra.api.resources;
 import java.util.Date;
 import java.util.List;
 
+import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.orders.Order;
 import br.com.extra.api.pojo.orders.OrderItem;
 import br.com.extra.api.pojo.orders.Tracking;
@@ -24,61 +25,27 @@ public interface OrdersResource {
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por recuperar um pedido.
+	 * responsável por atualizar a data de entrega dos itens de pedidos
+	 * informado.
 	 * <p/>
-	 * GET /orders/{orderId}
+	 * POST /orders/{orderId}/orderItems/dateDelivery/
 	 * 
 	 * @param orderId
 	 *            ID do pedido.
-	 * @return Pedido solicitado.
+	 * @param orderDateAdjusted
+	 *            Nova data de entrega do item.
+	 * @param reason
+	 *            Texto com o motivo da alteração Nova data de entrega do item.
+	 * @param originDeliveryID
+	 *            Id da entrega para o lojista no parceiro.
+	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public Order getOrder(String orderId);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por recuperar um item de um pedido.
-	 * <p/>
-	 * GET /orders/{orderId}/orderItems/{orderItemId}
-	 * 
-	 * @param orderId
-	 *            ID do pedido.
-	 * @param orderItemId
-	 *            ID do item do pedido.
-	 * @return Item solicitado.
-	 */
-	public OrderItem getOrderItem(String orderId, String orderItemId);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por recuperar lista de pedidos do Lojista.
-	 * <p/>
-	 * GET /orders
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos do lojista.
-	 */
-	public List<Order> getOrders(String offset, String limit);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por recuperar lista de novos pedidos do Lojista.
-	 * <p/>
-	 * GET /orders/status/new
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos novos do lojista.
-	 */
-	public List<Order> getNewOrders(String offset, String limit);
+	public String adjustItemsDeliveredDate(String orderId,
+			Date orderDateAdjusted, String reason, String originDeliveryID)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que é
@@ -93,40 +60,12 @@ public interface OrdersResource {
 	 *            Parâmetro utilizado para limitar a quantidade de registros
 	 *            trazidos pela operação.
 	 * @return Lista de pedidos aprovados do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<Order> getApprovedOrders(String offset, String limit);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por recuperar lista de pedidos enviados do Lojista.
-	 * <p/>
-	 * GET /orders/status/sent
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos enviados do lojista.
-	 */
-	public List<Order> getSentOrders(String offset, String limit);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por recuperar lista de pedidos entregues do Lojista.
-	 * <p/>
-	 * GET /orders/status/delivered
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos entregues do lojista.
-	 */
-	public List<Order> getDeliveredOrders(String offset, String limit);
+	public List<Order> getApprovedOrders(String offset, String limit)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que é
@@ -141,8 +80,105 @@ public interface OrdersResource {
 	 *            Parâmetro utilizado para limitar a quantidade de registros
 	 *            trazidos pela operação.
 	 * @return Lista de pedidos cancelados do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<Order> getCanceledOrders(String offset, String limit);
+	public List<Order> getCanceledOrders(String offset, String limit)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que é
+	 * responsável por recuperar lista de pedidos entregues do Lojista.
+	 * <p/>
+	 * GET /orders/status/delivered
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @return Lista de pedidos entregues do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public List<Order> getDeliveredOrders(String offset, String limit)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que é
+	 * responsável por recuperar lista de novos pedidos do Lojista.
+	 * <p/>
+	 * GET /orders/status/new
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @return Lista de pedidos novos do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public List<Order> getNewOrders(String offset, String limit)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que é
+	 * responsável por recuperar um pedido.
+	 * <p/>
+	 * GET /orders/{orderId}
+	 * 
+	 * @param orderId
+	 *            ID do pedido.
+	 * @return Pedido solicitado.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public Order getOrder(String orderId) throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que é
+	 * responsável por recuperar um item de um pedido.
+	 * <p/>
+	 * GET /orders/{orderId}/orderItems/{orderItemId}
+	 * 
+	 * @param orderId
+	 *            ID do pedido.
+	 * @param orderItemId
+	 *            ID do item do pedido.
+	 * @return Item solicitado.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public OrderItem getOrderItem(String orderId, String orderItemId)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que é
+	 * responsável por recuperar lista de pedidos do Lojista.
+	 * <p/>
+	 * GET /orders
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @return Lista de pedidos do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public List<Order> getOrders(String offset, String limit)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que é
@@ -158,8 +194,32 @@ public interface OrdersResource {
 	 *            Parâmetro utilizado para limitar a quantidade de registros
 	 *            trazidos pela operação.
 	 * @return Lista de pedidos parcialmente entregues do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<Order> getPartiallyDeliveredOrders(String offset, String limit);
+	public List<Order> getPartiallyDeliveredOrders(String offset, String limit)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que é
+	 * responsável por recuperar lista de pedidos enviados do Lojista.
+	 * <p/>
+	 * GET /orders/status/sent
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @return Lista de pedidos enviados do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public List<Order> getSentOrders(String offset, String limit)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que é
@@ -175,61 +235,12 @@ public interface OrdersResource {
 	 *            Parâmetro utilizado para limitar a quantidade de registros
 	 *            trazidos pela operação.
 	 * @return Lista de pedidos parcialmente enviados do lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<Order> getSentPartiallyOrders(String offset, String limit);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que é
-	 * responsável por atualizar a data de entrega dos itens de pedidos
-	 * informado.
-	 * <p/>
-	 * POST /orders/{orderId}/orderItems/dateDelivery/
-	 * 
-	 * @param orderId
-	 *            ID do pedido.
-	 * @param orderDateAdjusted
-	 *            Nova data de entrega do item.
-	 * @param reason
-	 *            Texto com o motivo da alteração Nova data de entrega do item.
-	 * @param originDeliveryID
-	 *            Id da entrega para o lojista no parceiro.
-	 * @return Status da operação.
-	 */
-	public String adjustItemsDeliveredDate(String orderId,
-			Date orderDateAdjusted, String reason, String originDeliveryID);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful
-	 * responsável por solicitar o cancelamento dos itens informados do pedido.
-	 * <p/>
-	 * 
-	 * POST /orders/{orderId}/ordersItems/status/canceled/
-	 * 
-	 * @param orderId
-	 *            ID do pedido.
-	 * @param orderItemIdList
-	 *            Lista de itens do pedido que serão cancelados.
-	 * @param reason
-	 *            Texto com o motivo.
-	 * @return Status da operação.
-	 */
-	public String requestOrderItemsCancellation(String orderId,
-			String[] orderItemIdList, String reason);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful
-	 * responsável por solicitar o cancelamento do pedido.
-	 * <p/>
-	 * 
-	 * POST /orders/{orderId}/status/canceled/
-	 * 
-	 * @param orderId
-	 *            ID do pedido.
-	 * @param reason
-	 *            Texto com o motivo.
-	 * @return Status da operação.
-	 */
-	public String requestOrderCancellation(String orderId, String reason);
+	public List<Order> getSentPartiallyOrders(String offset, String limit)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
@@ -246,9 +257,53 @@ public interface OrdersResource {
 	 * @param extraDescription
 	 *            Texto com o motivo da alteração.
 	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public String registerDelivery(String orderId, Date occurenceDt,
-			String originDeliveryID, String extraDescription);
+			String originDeliveryID, String extraDescription)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful
+	 * responsável por solicitar o cancelamento do pedido.
+	 * <p/>
+	 * 
+	 * POST /orders/{orderId}/status/canceled/
+	 * 
+	 * @param orderId
+	 *            ID do pedido.
+	 * @param reason
+	 *            Texto com o motivo.
+	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public String requestOrderCancellation(String orderId, String reason)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful
+	 * responsável por solicitar o cancelamento dos itens informados do pedido.
+	 * <p/>
+	 * 
+	 * POST /orders/{orderId}/ordersItems/status/canceled/
+	 * 
+	 * @param orderId
+	 *            ID do pedido.
+	 * @param orderItemIdList
+	 *            Lista de itens do pedido que serão cancelados.
+	 * @param reason
+	 *            Texto com o motivo.
+	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public String requestOrderItemsCancellation(String orderId,
+			String[] orderItemIdList, String reason) throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
@@ -263,7 +318,10 @@ public interface OrdersResource {
 	 *            ID do item do pedido.
 	 * 
 	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public String updateTracking(String orderId, String orderItemId,
-			Tracking tracking);
+			Tracking tracking) throws ServiceException;
 }

@@ -19,28 +19,7 @@ public enum Hosts {
 	/**
 	 * Host do serviço em Ambiente de Produção.
 	 */
-	PRODUCAO("https://api.extra.com.br/api/v1"),
-	/**
-	 * Host do serviço em Homologação.
-	 */
-	HLG("http://busapi.mp.hlg.dc.nova/api/v1"),
-	/**
-	 * Host do serviço em Homologação.
-	 */
-	SHLG("http://busapi.sandbox.mp.hlg.dc.nova/api/v1"),
-	/**
-	 * Host do serviço em Homologação.
-	 */
-	ATD("http://atd.mp.hlg.dc.nova/api-front-importer/jersey"),
-	
-	SAPIFR0NT("http://apifront.sandbox.extra.com.br/api-front-importer/jersey"),
-	
-	/**
-	 * Host do serviço em Homologação.
-	 */
-	NIRVANA("http://nirvana.cit:8001/api-front-importer/jersey");;
-	
-	 
+	PRODUCAO("https://api.extra.com.br/api/v1");
 
 	/**
 	 * Endereço do host.

@@ -15,7 +15,9 @@ import br.com.extra.api.core.AppToken;
 import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
+import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.sellerItems.SellerItem;
+import br.com.extra.api.utils.Utils;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -51,9 +53,141 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 	}
 
 	/**
+	 * Método que recupera do response uma lista de objeto que deverá ser
+	 * retornado.
+	 * 
+	 * @param response
+	 *            Response da requisição realizada.
+	 * @return Lista de objetos items do lojista.
+	 * @throws IOException
+	 *             Exceção lançada no parse da lista de retorno.
+	 */
+	protected List<SellerItem> getListFromResponse(ClientResponse response)
+			throws IOException {
+		List<SellerItem> pojos = new ArrayList<SellerItem>();
+		try {
+			pojos = new ObjectMapper().readValue(
+					response.getEntityInputStream(),
+					new TypeReference<List<SellerItem>>() {
+					});
+		} catch (IOException e) {
+			throw e;
+		}
+		return pojos;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
-	public List<SellerItem> getSellerItems(String offset, String limit) {
+	@Override
+	protected Class<SellerItem> getPojoClass() {
+		return SellerItem.class;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<SellerItem> getAvailableSellerItems(String offset, String limit)
+			throws ServiceException {
+
+		setResource("/sellerItems/status/selling");
+
+		// Parâmetros da requisição
+		MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
+		queryParameters.add("_offset", offset);
+		queryParameters.add("_limit", limit);
+
+		ClientResponse response = super.setQueryParams(queryParameters).get();
+
+		List<SellerItem> sellerItems = new ArrayList<SellerItem>();
+		// Caso a consulta retornar algum resultado, o objeto será populado,
+		// senão, retorna a lista vazia.
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				sellerItems = getListFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
+		} else {
+			throw new ServiceException(response.toString());
+		}
+
+		return sellerItems;
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public SellerItem getSellerItemBySkuID(String skuID)
+			throws ServiceException {
+
+		if (!Utils.isEmpty(skuID)) {
+			setResource("/sellerItems/" + skuID);
+		} else {
+			throw new ServiceException("Parameter skuId is mandatory.");
+		}
+
+		ClientResponse response = get();
+		SellerItem sellerItem = null;
+
+		// Caso a consulta retornar algum resultado, o objeto será populado,
+		// senão, retorna null.
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				sellerItem = getObjectFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
+		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
+				.getStatusCode()) {
+			String message = response.getStatus() + " - "
+					+ response.getClientResponseStatus().getReasonPhrase();
+			throw new ServiceException(message);
+		}
+
+		return sellerItem;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public SellerItem getSellerItemBySkuOrigin(String skuOrigin)
+			throws ServiceException {
+
+		if (!Utils.isEmpty(skuOrigin)) {
+			setResource("/sellerItems/skuOrigin/" + skuOrigin);
+		} else {
+			throw new ServiceException("Parameter skuOrigin is mandatory.");
+		}
+
+		ClientResponse response = get();
+
+		SellerItem sellerItem = null;
+
+		// Caso a consulta retornar algum resultado, o objeto será populado,
+		// senão, retorna null.
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				sellerItem = getObjectFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
+		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
+				.getStatusCode()) {
+			String message = response.getStatus() + " - "
+					+ response.getClientResponseStatus().getReasonPhrase();
+			throw new ServiceException(message);
+		}
+
+		return sellerItem;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<SellerItem> getSellerItems(String offset, String limit)
+			throws ServiceException {
 
 		setResource("/sellerItems");
 
@@ -64,24 +198,18 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 
 		ClientResponse response = super.setQueryParams(queryParameters).get();
 
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
+		List<SellerItem> sellerItems = new ArrayList<SellerItem>();
+		// Caso a consulta retornar algum resultado, o objeto será populado,
+		// senão, retorna a lista vazia.
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				sellerItems = getListFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceException("Error handling response. ", e);
+			}
+		} else {
+			throw new ServiceException(response.toString());
 		}
-
-		// List<SellerItem> sellerItems = new ArrayList<SellerItem>();
-		// try {
-		// sellerItems = new ObjectMapper().readValue(
-		// response.getEntityInputStream(),
-		// new TypeReference<List<SellerItem>>() {
-		// });
-		// } catch (IOException e) {
-		// throw new RuntimeException(
-		// "Erro ao criar o retorno da requisição: " + e.toString());
-		// }
-
-		List<SellerItem> sellerItems = getListFromResponse(response);
 
 		return sellerItems;
 
@@ -90,72 +218,7 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public SellerItem getSellerItemBySkuID(String skuID) {
-
-		if (!skuID.isEmpty()) {
-			setResource("/sellerItems/" + skuID);
-		} else {
-			throw new RuntimeException("É obrigatório passar o sku.");
-		}
-
-		ClientResponse response = get();
-
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
-		}
-
-		// SellerItem sellerItem = new SellerItem();
-		// try {
-		// sellerItem = new ObjectMapper().readValue(
-		// response.getEntityInputStream(),
-		// new TypeReference<SellerItem>() {
-		// });
-		// } catch (IOException e) {
-		// throw new RuntimeException(
-		// "Erro ao criar o retorno da requisição: " + e.toString());
-		// }
-
-		SellerItem sellerItem = getObjectFromResponse(response);
-
-		return sellerItem;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public SellerItem getSellerItemBySkuOrigin(String skuOrigin) {
-
-		if (!skuOrigin.isEmpty()) {
-			setResource("/sellerItems/skuOrigin/" + skuOrigin);
-		} else {
-			throw new RuntimeException("É obrigatório passar o sku.");
-		}
-
-		ClientResponse response = get();
-
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
-		}
-
-		SellerItem sellerItem = new SellerItem();
-		try {
-			sellerItem = new ObjectMapper().readValue(
-					response.getEntityInputStream(),
-					new TypeReference<SellerItem>() {
-					});
-		} catch (IOException e) {
-			throw new RuntimeException(
-					"Erro ao criar o retorno da requisição: " + e.toString());
-		}
-
-		return sellerItem;
-	}
-
-	public String postSellerItem(SellerItem sellerItem) {
+	public String postSellerItem(SellerItem sellerItem) throws ServiceException {
 
 		setResource("/sellerItems");
 
@@ -176,15 +239,14 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 
 			response = post(bodyParams);
 		} catch (IOException e) {
-			throw new RuntimeException(
+			throw new ServiceException(
 					"Error while trying to execute POST method on resource: "
-							+ super.getURI());
+							+ super.getURI(), e);
 		}
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
+			throw new ServiceException("Error on your request. "
 					+ response.toString());
 		}
 
@@ -198,40 +260,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public String uptadeStock(String skuId, Integer availableQuantity,
-			Integer totalQuantity) {
-
-		setResource("/sellerItems/" + skuId + "/stock");
-
-		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("availableQuantity", availableQuantity);
-		data.put("totalQuantity", totalQuantity);
-
-		ClientResponse response = null;
-		try {
-			response = put(data);
-		} catch (IOException e) {
-			throw new RuntimeException(
-					"Error while trying to execute PUT method on resource: "
-							+ super.getURI());
-		}
-
-		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
-				.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
-		}
-
-		return response.getClientResponseStatus().getStatusCode() + " - "
-				+ response.getClientResponseStatus().name();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	public String uptadePrice(String skuId, Double defaultPrice,
-			Double salePrice, String installmentId) {
+			Double salePrice, String installmentId) throws ServiceException {
 
 		setResource("/sellerItems/" + skuId + "/prices");
 
@@ -244,15 +274,14 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 		try {
 			response = put(data);
 		} catch (IOException e) {
-			throw new RuntimeException(
+			throw new ServiceException(
 					"Error while trying to execute PUT method on resource: "
-							+ super.getURI());
+							+ super.getURI(), e);
 		}
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
+			throw new ServiceException("Error on your request. "
 					+ response.toString());
 		}
 
@@ -263,44 +292,32 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public List<SellerItem> getAvailableSellerItems(String offset, String limit) {
+	public String uptadeStock(String skuId, Integer availableQuantity,
+			Integer totalQuantity) throws ServiceException {
 
-		setResource("/sellerItems/status/selling");
+		setResource("/sellerItems/" + skuId + "/stock");
 
-		// Parâmetros da requisição
-		MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
-		queryParameters.add("_offset", offset);
-		queryParameters.add("_limit", limit);
+		Map<String, Object> data = new HashMap<String, Object>();
+		data.put("availableQuantity", availableQuantity);
+		data.put("totalQuantity", totalQuantity);
 
-		ClientResponse response = super.setQueryParams(queryParameters).get();
+		ClientResponse response = null;
+		try {
+			response = put(data);
+		} catch (IOException e) {
+			throw new ServiceException(
+					"Error while trying to execute PUT method on resource: "
+							+ super.getURI(), e);
+		}
 
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
+		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
+				.getStatusCode()) {
+			throw new ServiceException("Error on your request. "
 					+ response.toString());
 		}
 
-		List<SellerItem> sellerItems = new ArrayList<SellerItem>();
-		try {
-			sellerItems = new ObjectMapper().readValue(
-					response.getEntityInputStream(),
-					new TypeReference<List<SellerItem>>() {
-					});
-		} catch (IOException e) {
-			throw new RuntimeException(
-					"Erro ao criar o retorno da requisição: " + e.toString());
-		}
-
-		return sellerItems;
-
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected Class<SellerItem> getPojoClass() {
-		return SellerItem.class;
+		return response.getClientResponseStatus().getStatusCode() + " - "
+				+ response.getClientResponseStatus().name();
 	}
 
 }

@@ -2,6 +2,7 @@ package br.com.extra.api.resources;
 
 import java.util.List;
 
+import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.sellerItems.SellerItem;
 
 /**
@@ -19,6 +20,60 @@ import br.com.extra.api.pojo.sellerItems.SellerItem;
 public interface SellerItemsResource {
 
 	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * recupera itens do lojista que já estão disponíveis para venda
+	 * relacionados com o token do lojista informado.
+	 * <p/>
+	 * 
+	 * GET /sellerItems/status/selling
+	 * 
+	 * @param offset
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos por página.
+	 * @param limit
+	 *            Parâmetro utilizado para limitar a quantidade de registros
+	 *            trazidos pela operação.
+	 * @return Lista de pedidos disponíveis para venda.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public List<SellerItem> getAvailableSellerItems(String offset, String limit)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful que
+	 * responsável por recuperar detalhes do item do Lojista por SKU.
+	 * <p/>
+	 * GET /sellerItems/{skuId}
+	 * 
+	 * @param skuID
+	 *            SKU ID do produto no Marketplace.
+	 * @return Detalhes do item.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public SellerItem getSellerItemBySkuID(String skuID)
+			throws ServiceException;
+
+	/**
+	 * Método utilizado para realizar a chamada ao WebService Restful
+	 * responsável por recuperar detalhes do item do Lojista por SKU do Lojista.
+	 * <p/>
+	 * GET /sellerItems/skuOrigin/{skuOrigin}
+	 * 
+	 * @param skuOrigin
+	 *            SKU ID do produto do Lojista.
+	 * @return Detalhes do item.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public SellerItem getSellerItemBySkuOrigin(String skuOrigin)
+			throws ServiceException;
+
+	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que é
 	 * responsável por recuperar lista de produtos que são vendidos pelo
 	 * Lojista.
@@ -32,32 +87,12 @@ public interface SellerItemsResource {
 	 *            Parâmetro utilizado para limitar a quantidade de registros
 	 *            trazidos pela operação.
 	 * @return Lista de produtos vendidos pelo lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<SellerItem> getSellerItems(String offset, String limit);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * responsável por recuperar detalhes do item do Lojista por SKU.
-	 * <p/>
-	 * GET /sellerItems/{skuId}
-	 * 
-	 * @param skuID
-	 *            SKU ID do produto no Marketplace.
-	 * @return Detalhes do item.
-	 */
-	public SellerItem getSellerItemBySkuID(String skuID);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful
-	 * responsável por recuperar detalhes do item do Lojista por SKU do Lojista.
-	 * <p/>
-	 * GET /sellerItems/skuOrigin/{skuOrigin}
-	 * 
-	 * @param skuOrigin
-	 *            SKU ID do produto do Lojista.
-	 * @return Detalhes do item.
-	 */
-	public SellerItem getSellerItemBySkuOrigin(String skuOrigin);
+	public List<SellerItem> getSellerItems(String offset, String limit)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que faz a
@@ -65,9 +100,9 @@ public interface SellerItemsResource {
 	 * <p/>
 	 * POST /sellerItems
 	 * 
-	 * @param bodyParams
-	 *            Mapa contendo os parâmetros que precisam ser passados no body
-	 *            da requisição. Exemplo de conteúdo do mapa:
+	 * @param sellerItem
+	 *            Objeto contendo os parâmetros que precisam ser passados no body
+	 *            da requisição. Exemplo de conteúdo que pode ser preenchido:
 	 *            <p/>
 	 *            {<br/>
 	 *            "skuOrigin": "string",<br/>
@@ -80,25 +115,11 @@ public interface SellerItemsResource {
 	 *            "crossDockingTime": 1<br/>
 	 * @return Retorno da requisição, composto do status e o location da
 	 *         associação do produto ao lojista.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public String postSellerItem(SellerItem sellerItem);
-
-	/**
-	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * atualiza a quantidade disponível para venda de um item do Lojista.
-	 * <p/>
-	 * PUT /sellerItems/{skuId}/stock
-	 * 
-	 * @param skuId
-	 *            SKU ID do produto a venda.
-	 * @param availableQuantity
-	 *            Quantidade disponível.
-	 * @param totalQuantity
-	 *            Quantidade total de produtos.
-	 * @return Status da operação.
-	 */
-	public String uptadeStock(String skuId, Integer availableQuantity,
-			Integer totalQuantity);
+	public String postSellerItem(SellerItem sellerItem) throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
@@ -116,25 +137,30 @@ public interface SellerItemsResource {
 	 * @param installmentId
 	 *            Parcelamento do produto.
 	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public String uptadePrice(String skuId, Double defaultPrice,
-			Double salePrice, String installmentId);
+			Double salePrice, String installmentId) throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
-	 * recupera itens do lojista que já estão disponíveis para venda
-	 * relacionados com o token do lojista informado.
+	 * atualiza a quantidade disponível para venda de um item do Lojista.
 	 * <p/>
+	 * PUT /sellerItems/{skuId}/stock
 	 * 
-	 * GET /sellerItems/status/selling
-	 * 
-	 * @param offset
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos por página.
-	 * @param limit
-	 *            Parâmetro utilizado para limitar a quantidade de registros
-	 *            trazidos pela operação.
-	 * @return Lista de pedidos disponíveis para venda.
+	 * @param skuId
+	 *            SKU ID do produto a venda.
+	 * @param availableQuantity
+	 *            Quantidade disponível.
+	 * @param totalQuantity
+	 *            Quantidade total de produtos.
+	 * @return Status da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
-	public List<SellerItem> getAvailableSellerItems(String offset, String limit);
+	public String uptadeStock(String skuId, Integer availableQuantity,
+			Integer totalQuantity) throws ServiceException;
 }
