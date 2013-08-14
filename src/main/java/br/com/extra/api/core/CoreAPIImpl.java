@@ -14,6 +14,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
+import br.com.extra.api.core.exception.ServiceBusinessException;
+import br.com.extra.api.core.exception.ServiceDataManipulationException;
+import br.com.extra.api.core.exception.ServiceException;
+import br.com.extra.api.core.exception.ServiceInfrastructureException;
 import br.com.extra.api.pojo.Pojos;
 import br.com.extra.api.utils.Utils;
 
@@ -88,26 +92,6 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	}
 
 	/**
-	 * Método GET.
-	 * 
-	 * @return Objeto contendo o retorno da requisição.
-	 */
-	public ClientResponse get() {
-
-		Client client = Client.create();
-		// Headers da requisição
-		client.addFilter(getFilter());
-		// Criação do serviço
-		WebResource webResource = client.resource(host + resource).queryParams(
-				this.queryParams);
-		// Invocação do serviço
-		ClientResponse response = webResource.accept(getMediaType()).get(
-				ClientResponse.class);
-
-		return response;
-	}
-
-	/**
 	 * Método que cria o filtro contendo os tokens no header.
 	 * 
 	 * @return Filtro com os tokens.
@@ -126,6 +110,18 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 				return getNext().handle(clientRequest);
 			}
 		};
+	}
+
+	/**
+	 * Método utilizado para recuperar o MediaType do Request
+	 * 
+	 * @return MediaType informado ou APPLICATION_JSON_TYPE.toString() como
+	 *         padrão
+	 */
+	private String getMediaType() {
+		String type = Utils.isEmpty(mediaType) ? MediaType.APPLICATION_JSON_TYPE
+				.toString() : this.mediaType;
+		return type;
 	}
 
 	/**
@@ -154,18 +150,6 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 					"Erro ao criar o retorno da requisição: " + e.toString());
 		}
 		return pojos;
-	}
-
-	/**
-	 * Método utilizado para recuperar o MediaType do Request
-	 * 
-	 * @return MediaType informado ou APPLICATION_JSON_TYPE.toString() como
-	 *         padrão
-	 */
-	private String getMediaType() {
-		String type = Utils.isEmpty(mediaType) ? MediaType.APPLICATION_JSON_TYPE
-				.toString() : this.mediaType;
-		return type;
 	}
 
 	/**
@@ -200,6 +184,48 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	protected abstract Class<T> getPojoClass();
 
 	/**
+	 * Método utilizado para fazer o tratamento de erros
+	 * 
+	 * @param response
+	 *            Resposta da requisição.
+	 * @param message
+	 *            Mensagem que será retornada na exceção.
+	 * @throws ServiceException
+	 *             Exceção que deverá ser lançada.
+	 */
+	protected ServiceException errorHandler(ClientResponse response, String message)
+			{
+		if (response.getStatus() >= 400 && response.getStatus() < 500) {
+			return new ServiceBusinessException(response.getStatus(), message);
+		} else if (response.getStatus() >= 500) {
+			return new ServiceInfrastructureException(response.getStatus(),
+					message);
+		} else {
+			return new ServiceException(response.getStatus(), message);
+		}
+	}
+
+	/**
+	 * Método GET.
+	 * 
+	 * @return Objeto contendo o retorno da requisição.
+	 */
+	public ClientResponse get() {
+
+		Client client = Client.create();
+		// Headers da requisição
+		client.addFilter(getFilter());
+		// Criação do serviço
+		WebResource webResource = client.resource(host + resource).queryParams(
+				this.queryParams);
+		// Invocação do serviço
+		ClientResponse response = webResource.accept(getMediaType()).get(
+				ClientResponse.class);
+
+		return response;
+	}
+
+	/**
 	 * Método que recupera o endereço do serviço.
 	 * 
 	 * @return Endereço completo do serviço.
@@ -215,10 +241,12 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 *            Objeto contendo os parâmetros que serão incluídos no corpo da
 	 *            requisição.
 	 * @return Objeto contendo o retorno da requisição.
-	 * @throws IOException
-	 *             Exceção lançada caso haja problemas com a chamada.
+	 * @throws ServiceDataManipulationException
+	 *             Exceção lançada caso haja problemas na manipulação dos dados
+	 *             da chamada.
 	 */
-	public ClientResponse post(Object params) throws IOException {
+	public ClientResponse post(Object params)
+			throws ServiceDataManipulationException {
 
 		Client client = Client.create();
 		// Inclusão dos headers de requisição
@@ -230,7 +258,11 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 		if (params instanceof Map) {
 			// Criação do objeto JSON com os parâmetros quando for enviado um
 			// Mapa
-			input = new ObjectMapper().writeValueAsString(params);
+			try {
+				input = new ObjectMapper().writeValueAsString(params);
+			} catch (IOException e) {
+				throw new ServiceDataManipulationException(e);
+			}
 		} else {
 			input = params;
 		}
@@ -249,10 +281,12 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 *            Mapa contendo os parâmetros que serão incluídos no corpo da
 	 *            requisição.
 	 * @return Objeto contendo o retorno da requisição.
-	 * @throws IOException
-	 *             Exceção lançada caso haja problemas com a chamada.
+	 * @throws ServiceDataManipulationException
+	 *             Exceção lançada caso haja problemas na manipulação dos dados
+	 *             da chamada.
 	 */
-	public ClientResponse put(Map<String, Object> params) throws IOException {
+	public ClientResponse put(Map<String, Object> params)
+			throws ServiceDataManipulationException {
 
 		Client client = Client.create();
 		// Headers da requisição
@@ -260,7 +294,12 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 		// Criação do serviço
 		WebResource webResource = client.resource(host + resource);
 		// Criação do objeto JSON com os parâmetros
-		String in = new ObjectMapper().writeValueAsString(params);
+		String in;
+		try {
+			in = new ObjectMapper().writeValueAsString(params);
+		} catch (IOException e) {
+			throw new ServiceDataManipulationException(e);
+		}
 		// Invocação do serviço
 		ClientResponse response = webResource.type(getMediaType())
 				.accept(getMediaType()).put(ClientResponse.class, in);

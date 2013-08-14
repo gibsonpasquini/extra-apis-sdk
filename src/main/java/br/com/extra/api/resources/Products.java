@@ -13,6 +13,7 @@ import br.com.extra.api.core.AppToken;
 import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
+import br.com.extra.api.core.exception.ServiceDataManipulationException;
 import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.products.Product;
 import br.com.extra.api.utils.Utils;
@@ -88,7 +89,8 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 		if (!Utils.isEmpty(productID)) {
 			setResource("/products/" + productID);
 		} else {
-			throw new ServiceException("Parameter productId is mandatory.");
+			throw new ServiceDataManipulationException(
+					"Parameter productId is mandatory.");
 		}
 
 		ClientResponse response = get();
@@ -98,13 +100,14 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 			try {
 				product = getObjectFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
 			String message = response.getStatus() + " - "
 					+ response.getClientResponseStatus().getReasonPhrase();
-			throw new ServiceException(message);
+			throw errorHandler(response, message);
 		}
 
 		return product;
@@ -115,7 +118,7 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 		if (!Utils.isEmpty(skuID)) {
 			setResource("/products/sku/" + skuID);
 		} else {
-			throw new ServiceException("Parameter skuId is mandatory.");
+			throw new ServiceDataManipulationException("Parameter skuId is mandatory.");
 		}
 
 		ClientResponse response = get();
@@ -125,13 +128,13 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 			try {
 				product = getObjectFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException("Error handling response. ", e);
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
 			String message = response.getStatus() + " - "
 					+ response.getClientResponseStatus().getReasonPhrase();
-			throw new ServiceException(message);
+			throw errorHandler(response, message);
 		}
 
 		return product;
@@ -172,7 +175,7 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 		} else if (idCategory != null) {
 			queryParameters.add("idCategory", idCategory.toString());
 		} else {
-			throw new ServiceException(
+			throw new ServiceDataManipulationException(
 					"At least one parameter must be informed for this service: searchText or idCategory.");
 		}
 
@@ -182,7 +185,7 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 			try {
 				products = getListFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException("Error handling response. ", e);
 			}
 		}
 

@@ -1,6 +1,7 @@
 package br.com.extra.api.resources;
 
 import br.com.extra.api.core.exception.ServiceException;
+import br.com.extra.api.pojo.loads.LoadConfirmation;
 import br.com.extra.api.pojo.loads.LoadResponse;
 import br.com.extra.api.pojo.loads.ProductLoad;
 import br.com.extra.api.pojo.loads.ProductLoadResponse;
@@ -63,11 +64,11 @@ public interface LoadsResource {
 	 * @param products
 	 *            Objeto que pode conter um arquivo JSON que será compactado ou
 	 *            uma String que contém JSON que será compactada.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String loadProducts(ProductLoad products) throws ServiceException;
+	public LoadConfirmation loadProducts(ProductLoad products) throws ServiceException;
 
 }

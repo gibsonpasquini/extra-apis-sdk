@@ -17,6 +17,7 @@ import br.com.extra.api.core.AppToken;
 import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
+import br.com.extra.api.core.exception.ServiceDataManipulationException;
 import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.orders.Order;
 import br.com.extra.api.pojo.orders.OrderItem;
@@ -78,21 +79,16 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 
 		ClientResponse response = super.setQueryParams(queryParameters).get();
 
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-			// Fazer tratamento de erro adequado.
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ response.toString());
-		}
-
 		List<Order> orders = new ArrayList<Order>();
 		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
 			try {
 				orders = getListFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else {
-			throw new ServiceException(response.toString());
+			throw errorHandler(response, response.toString());
 		}
 
 		return orders;
@@ -133,41 +129,35 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	/**
 	 * {@inheritDoc}
 	 */
-	public String adjustItemsDeliveredDate(String orderId,
+	public Boolean adjustItemsDeliveredDate(String orderId,
 			Date orderDateAdjusted, String reason, String originDeliveryID)
 			throws ServiceException {
 
-//		if (!Utils.isEmpty(orderId)) {
-//			setResource("/orders/" + orderId + "/orderItems/dateDelivery");
-//		} else {
-//			throw new ServiceException("Parameter skuId is mandatory.");
-//		}
-//
-//		DateTime dt = new DateTime(orderDateAdjusted);
-//
-//		// Parâmetros da requisição
-//		Map<String, Object> data = new HashMap<String, Object>();
-//		data.put("dateUpdate", dt.toString());
-//		data.put("reason", reason);
-//		data.put("originDeliveryId", originDeliveryID);
-//
-//		ClientResponse response = null;
-//		try {
-//			response = post(data);
-//		} catch (IOException e) {
-//			throw new ServiceException(
-//					"Error while trying to execute POST method on resource: "
-//							+ super.getURI(), e);
-//		}
-//
-//		if (response.getStatus() != ClientResponse.Status.CREATED
-//				.getStatusCode()) {
-//			throw new ServiceException("Error on your request. "
-//					+ response.toString());
-//		}
-//
-//		return response.getEntity(String.class);
-		
+		// if (!Utils.isEmpty(orderId)) {
+		// setResource("/orders/" + orderId + "/orderItems/dateDelivery");
+		// } else {
+		// throw new
+		// ServiceDataManipulationException("Parameter skuId is mandatory.");
+		// }
+		//
+		// DateTime dt = new DateTime(orderDateAdjusted);
+		//
+		// // Parâmetros da requisição
+		// Map<String, Object> data = new HashMap<String, Object>();
+		// data.put("dateUpdate", dt.toString());
+		// data.put("reason", reason);
+		// data.put("originDeliveryId", originDeliveryID);
+		//
+		// ClientResponse response = post(data);
+		//
+		// if (response.getStatus() != ClientResponse.Status.CREATED
+		// .getStatusCode()) {
+		// throw errorHandler(response, "Error on your request. "
+		// + response.toString());
+		// }
+		//
+		// return true;
+
 		throw new ServiceException("Sorry, this method is not implemented yet!");
 
 	}
@@ -225,7 +215,8 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 		if (!Utils.isEmpty(orderId)) {
 			setResource("/orders/" + orderId);
 		} else {
-			throw new ServiceException("Parameter orderId is mandatory.");
+			throw new ServiceDataManipulationException(
+					"Parameter orderId is mandatory.");
 		}
 
 		ClientResponse response = get();
@@ -236,13 +227,14 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 			try {
 				order = getObjectFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
 			String message = response.getStatus() + " - "
 					+ response.getClientResponseStatus().getReasonPhrase();
-			throw new ServiceException(message);
+			throw errorHandler(response, message);
 		}
 
 		return order;
@@ -257,19 +249,20 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 		if (!Utils.isEmpty(orderId) && !Utils.isEmpty(orderItemId)) {
 			setResource("/orders/" + orderId + "/orderItems/" + orderItemId);
 		} else {
-			throw new ServiceException(
+			throw new ServiceDataManipulationException(
 					"Parameters orderId and orderItemId are mandatory.");
 		}
 
 		ClientResponse response = get();
 
 		OrderItem orderItem = null;
-		if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
 			try {
 				orderItem = new ObjectMapper().readValue(
 						response.getEntityInputStream(), OrderItem.class);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		}
 
@@ -281,7 +274,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	 */
 	public List<Order> getOrders(String offset, String limit)
 			throws ServiceException {
-		
+
 		throw new ServiceException("Sorry, this method is not implemented yet!");
 
 	}
@@ -322,7 +315,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	/**
 	 * {@inheritDoc}
 	 */
-	public String registerDelivery(String orderId, Date occurenceDt,
+	public Boolean registerDelivery(String orderId, Date occurenceDt,
 			String originDeliveryID, String extraDescription)
 			throws ServiceException {
 
@@ -336,29 +329,21 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 		data.put("originDeliveryId", originDeliveryID);
 		data.put("extraDescription", extraDescription);
 
-		ClientResponse response = null;
-		try {
-			response = put(data);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute PUT method on resource: "
-							+ super.getURI(), e);
-		}
+		ClientResponse response = put(data);
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
 
-		return response.getClientResponseStatus().getStatusCode() + " - "
-				+ response.getClientResponseStatus().name();
+		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String requestOrderCancellation(String orderId, String reason)
+	public Boolean requestOrderCancellation(String orderId, String reason)
 			throws ServiceException {
 
 		setResource("/orders/" + orderId + "/status/canceled");
@@ -367,30 +352,21 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("reason", reason);
 
-		ClientResponse response = null;
-		try {
-			response = post(data);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute PUT method on resource: "
-							+ super.getURI(), e);
-		}
+		ClientResponse response = post(data);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
 
-		String resp = response.getStatus() + " - "
-				+ response.getClientResponseStatus().getReasonPhrase();
-		return resp;
+		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String requestOrderItemsCancellation(String orderId,
+	public Boolean requestOrderItemsCancellation(String orderId,
 			String[] orderItemIdList, String reason) throws ServiceException {
 
 		setResource("/orders/" + orderId + "/ordersItems/status/canceled");
@@ -400,65 +376,47 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 		data.put("orderItemIdList", orderItemIdList);
 		data.put("reason", reason);
 
-		ClientResponse response = null;
-		try {
-			response = post(data);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute POST method on resource: "
-							+ super.getURI(), e);
-		}
+		ClientResponse response = post(data);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
 
-		String resp = response.getStatus() + " - "
-				+ response.getClientResponseStatus().getReasonPhrase();
-		return resp;
+		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String updateTracking(String orderId, String orderItemId,
+	public Boolean updateTracking(String orderId, String orderItemId,
 			Tracking tracking) throws ServiceException {
 
 		setResource("/orders/" + orderId + "/ordersItems/" + orderItemId
 				+ "/trackings");
 
-		ClientResponse response = null;
-		try {
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("accessKeyNfe", tracking.getAccessKeyNfe());
-			params.put("carrierName", tracking.getCarrierName());
-			params.put("controlPoint", tracking.getControlPoint());
-			params.put("extraDescription", tracking.getExtraDescription());
-			params.put("linkNfe", tracking.getLinkNfe());
-			params.put("nfe", tracking.getNfe());
-			params.put("objectId", tracking.getObjectId());
-			params.put("occurenceDt", tracking.getOccurenceDt());
-			params.put("originDeliveryId", tracking.getOriginDeliveryId());
-			params.put("serieNfe", tracking.getSerieNfe());
-			params.put("url", tracking.getUrl());
-			response = post(params);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute POST method on resource: "
-							+ super.getURI(), e);
-		}
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("accessKeyNfe", tracking.getAccessKeyNfe());
+		params.put("carrierName", tracking.getCarrierName());
+		params.put("controlPoint", tracking.getControlPoint());
+		params.put("extraDescription", tracking.getExtraDescription());
+		params.put("linkNfe", tracking.getLinkNfe());
+		params.put("nfe", tracking.getNfe());
+		params.put("objectId", tracking.getObjectId());
+		params.put("occurenceDt", tracking.getOccurenceDt());
+		params.put("originDeliveryId", tracking.getOriginDeliveryId());
+		params.put("serieNfe", tracking.getSerieNfe());
+		params.put("url", tracking.getUrl());
+		ClientResponse response = post(params);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
+			throw errorHandler(response, "Error on your request. "
 					+ response.toString());
 		}
 
-		String resp = response.getStatus() + " - "
-				+ response.getClientResponseStatus().getReasonPhrase();
-		return resp;
+		return true;
 
 	}
 }

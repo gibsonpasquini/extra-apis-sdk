@@ -15,6 +15,7 @@ import br.com.extra.api.core.AppToken;
 import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
+import br.com.extra.api.core.exception.ServiceDataManipulationException;
 import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.sellerItems.SellerItem;
 import br.com.extra.api.utils.Utils;
@@ -106,10 +107,11 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 			try {
 				sellerItems = getListFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else {
-			throw new ServiceException(response.toString());
+			 throw errorHandler(response, response.toString());
 		}
 
 		return sellerItems;
@@ -125,7 +127,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 		if (!Utils.isEmpty(skuID)) {
 			setResource("/sellerItems/" + skuID);
 		} else {
-			throw new ServiceException("Parameter skuId is mandatory.");
+			throw new ServiceDataManipulationException(
+					"Parameter skuId is mandatory.");
 		}
 
 		ClientResponse response = get();
@@ -137,13 +140,16 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 			try {
 				sellerItem = getObjectFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
 			String message = response.getStatus() + " - "
 					+ response.getClientResponseStatus().getReasonPhrase();
-			throw new ServiceException(message);
+
+			throw errorHandler(response, message);
+
 		}
 
 		return sellerItem;
@@ -158,7 +164,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 		if (!Utils.isEmpty(skuOrigin)) {
 			setResource("/sellerItems/skuOrigin/" + skuOrigin);
 		} else {
-			throw new ServiceException("Parameter skuOrigin is mandatory.");
+			throw new ServiceDataManipulationException(
+					"Parameter skuOrigin is mandatory.");
 		}
 
 		ClientResponse response = get();
@@ -171,13 +178,15 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 			try {
 				sellerItem = getObjectFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
 			String message = response.getStatus() + " - "
 					+ response.getClientResponseStatus().getReasonPhrase();
-			throw new ServiceException(message);
+
+			throw errorHandler(response, message);
 		}
 
 		return sellerItem;
@@ -205,10 +214,11 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 			try {
 				sellerItems = getListFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		} else {
-			throw new ServiceException(response.toString());
+			throw errorHandler(response, response.toString());
 		}
 
 		return sellerItems;
@@ -218,49 +228,38 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public String postSellerItem(SellerItem sellerItem) throws ServiceException {
+	public Boolean postSellerItem(SellerItem sellerItem) throws ServiceException {
 
 		setResource("/sellerItems");
 
 		ClientResponse response = null;
 
-		try {
-			Map<String, Object> bodyParams = new HashMap<String, Object>();
-			bodyParams.put("skuOrigin", sellerItem.getSkuOrigin());
-			bodyParams.put("skuId", sellerItem.getSkuId());
-			bodyParams.put("defaultPrice", sellerItem.getDefaultPrice());
-			bodyParams.put("salePrice", sellerItem.getSalePrice());
-			bodyParams.put("availableQuantity",
-					sellerItem.getAvailableQuantity());
-			bodyParams.put("installmentId", sellerItem.getInstallmentId());
-			bodyParams.put("totalQuantity", sellerItem.getTotalQuantity());
-			bodyParams
-					.put("crossDockingTime", sellerItem.getCrossDockingTime());
+		Map<String, Object> bodyParams = new HashMap<String, Object>();
+		bodyParams.put("skuOrigin", sellerItem.getSkuOrigin());
+		bodyParams.put("skuId", sellerItem.getSkuId());
+		bodyParams.put("defaultPrice", sellerItem.getDefaultPrice());
+		bodyParams.put("salePrice", sellerItem.getSalePrice());
+		bodyParams.put("availableQuantity", sellerItem.getAvailableQuantity());
+		bodyParams.put("installmentId", sellerItem.getInstallmentId());
+		bodyParams.put("totalQuantity", sellerItem.getTotalQuantity());
+		bodyParams.put("crossDockingTime", sellerItem.getCrossDockingTime());
 
-			response = post(bodyParams);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute POST method on resource: "
-							+ super.getURI(), e);
-		}
+		response = post(bodyParams);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
 
-		String resp = response.getStatus() + " - "
-				+ response.getClientResponseStatus().getReasonPhrase()
-				+ " location: " + response.getLocation();
-		return resp;
+		return true;
 
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String uptadePrice(String skuId, Double defaultPrice,
+	public Boolean uptadePrice(String skuId, Double defaultPrice,
 			Double salePrice, String installmentId) throws ServiceException {
 
 		setResource("/sellerItems/" + skuId + "/prices");
@@ -270,29 +269,21 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 		data.put("salePrice", salePrice);
 		data.put("installmentId", installmentId);
 
-		ClientResponse response = null;
-		try {
-			response = put(data);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute PUT method on resource: "
-							+ super.getURI(), e);
-		}
+		ClientResponse response = put(data);
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
 
-		return response.getClientResponseStatus().getStatusCode() + " - "
-				+ response.getClientResponseStatus().name();
+		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String uptadeStock(String skuId, Integer availableQuantity,
+	public Boolean uptadeStock(String skuId, Integer availableQuantity,
 			Integer totalQuantity) throws ServiceException {
 
 		setResource("/sellerItems/" + skuId + "/stock");
@@ -301,23 +292,15 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 		data.put("availableQuantity", availableQuantity);
 		data.put("totalQuantity", totalQuantity);
 
-		ClientResponse response = null;
-		try {
-			response = put(data);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute PUT method on resource: "
-							+ super.getURI(), e);
-		}
+		ClientResponse response = put(data);
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
 
-		return response.getClientResponseStatus().getStatusCode() + " - "
-				+ response.getClientResponseStatus().name();
+		return true;
 	}
 
 }

@@ -38,12 +38,12 @@ public interface OrdersResource {
 	 *            Texto com o motivo da alteração Nova data de entrega do item.
 	 * @param originDeliveryID
 	 *            Id da entrega para o lojista no parceiro.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String adjustItemsDeliveredDate(String orderId,
+	public Boolean adjustItemsDeliveredDate(String orderId,
 			Date orderDateAdjusted, String reason, String originDeliveryID)
 			throws ServiceException;
 
@@ -256,12 +256,12 @@ public interface OrdersResource {
 	 *            Id da entrega para o lojista no parceiro.
 	 * @param extraDescription
 	 *            Texto com o motivo da alteração.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String registerDelivery(String orderId, Date occurenceDt,
+	public Boolean registerDelivery(String orderId, Date occurenceDt,
 			String originDeliveryID, String extraDescription)
 			throws ServiceException;
 
@@ -276,12 +276,12 @@ public interface OrdersResource {
 	 *            ID do pedido.
 	 * @param reason
 	 *            Texto com o motivo.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String requestOrderCancellation(String orderId, String reason)
+	public Boolean requestOrderCancellation(String orderId, String reason)
 			throws ServiceException;
 
 	/**
@@ -297,12 +297,12 @@ public interface OrdersResource {
 	 *            Lista de itens do pedido que serão cancelados.
 	 * @param reason
 	 *            Texto com o motivo.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String requestOrderItemsCancellation(String orderId,
+	public Boolean requestOrderItemsCancellation(String orderId,
 			String[] orderItemIdList, String reason) throws ServiceException;
 
 	/**
@@ -317,11 +317,11 @@ public interface OrdersResource {
 	 * @param orderItemId
 	 *            ID do item do pedido.
 	 * 
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String updateTracking(String orderId, String orderItemId,
+	public Boolean updateTracking(String orderId, String orderItemId,
 			Tracking tracking) throws ServiceException;
 }

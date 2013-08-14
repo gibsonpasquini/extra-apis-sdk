@@ -101,8 +101,9 @@ public interface SellerItemsResource {
 	 * POST /sellerItems
 	 * 
 	 * @param sellerItem
-	 *            Objeto contendo os parâmetros que precisam ser passados no body
-	 *            da requisição. Exemplo de conteúdo que pode ser preenchido:
+	 *            Objeto contendo os parâmetros que precisam ser passados no
+	 *            body da requisição. Exemplo de conteúdo que pode ser
+	 *            preenchido:
 	 *            <p/>
 	 *            {<br/>
 	 *            "skuOrigin": "string",<br/>
@@ -113,13 +114,13 @@ public interface SellerItemsResource {
 	 *            "installmentId": "20p3x",<br/>
 	 *            "totalQuantity": "250",<br/>
 	 *            "crossDockingTime": 1<br/>
-	 * @return Retorno da requisição, composto do status e o location da
-	 *         associação do produto ao lojista.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String postSellerItem(SellerItem sellerItem) throws ServiceException;
+	public Boolean postSellerItem(SellerItem sellerItem)
+			throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
@@ -136,12 +137,12 @@ public interface SellerItemsResource {
 	 *            Preço 'por'.
 	 * @param installmentId
 	 *            Parcelamento do produto.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String uptadePrice(String skuId, Double defaultPrice,
+	public Boolean uptadePrice(String skuId, Double defaultPrice,
 			Double salePrice, String installmentId) throws ServiceException;
 
 	/**
@@ -156,11 +157,11 @@ public interface SellerItemsResource {
 	 *            Quantidade disponível.
 	 * @param totalQuantity
 	 *            Quantidade total de produtos.
-	 * @return Status da operação.
+	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public String uptadeStock(String skuId, Integer availableQuantity,
+	public Boolean uptadeStock(String skuId, Integer availableQuantity,
 			Integer totalQuantity) throws ServiceException;
 }

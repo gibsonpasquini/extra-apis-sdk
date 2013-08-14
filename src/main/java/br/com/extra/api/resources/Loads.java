@@ -11,7 +11,9 @@ import br.com.extra.api.core.AppToken;
 import br.com.extra.api.core.AuthToken;
 import br.com.extra.api.core.CoreAPIImpl;
 import br.com.extra.api.core.Hosts;
+import br.com.extra.api.core.exception.ServiceDataManipulationException;
 import br.com.extra.api.core.exception.ServiceException;
+import br.com.extra.api.pojo.loads.LoadConfirmation;
 import br.com.extra.api.pojo.loads.LoadResponse;
 import br.com.extra.api.pojo.loads.ProductLoad;
 import br.com.extra.api.pojo.loads.ProductLoadResponse;
@@ -59,8 +61,12 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 	 * @throws IOException
 	 *             Exceção lançada caso haja algum problema na compactação do
 	 *             conteúdo.
+	 * @throws ServiceDataManipulationException
+	 *             Exceção lançada caso haja problemas na mapipulação das
+	 *             informações.
 	 */
-	private byte[] compress(ProductLoad products) throws IOException {
+	private byte[] compress(ProductLoad products) throws IOException,
+			ServiceDataManipulationException {
 		// Array de bytes que será enviado para o serviço
 		byte[] compressedByteArray = null;
 		try {
@@ -88,7 +94,7 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 				// Lançamento de Exceção caso não seja enviado nem o arquivo nem
 				// a String.
 			} else {
-				throw new RuntimeException(
+				throw new ServiceDataManipulationException(
 						"Error while trying gziping content. There is no content to be compressed.");
 			}
 
@@ -136,7 +142,8 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 				loadStatus = new ObjectMapper().readValue(
 						response.getEntityInputStream(), LoadResponse.class);
 			} catch (IOException e) {
-				throw new ServiceException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		}
 
@@ -175,7 +182,7 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 	/**
 	 * {@inheritDoc}
 	 */
-	public String loadProducts(ProductLoad products) throws ServiceException {
+	public LoadConfirmation loadProducts(ProductLoad products) throws ServiceException {
 
 		setResource("/loads/products");
 
@@ -187,25 +194,18 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 					e1);
 		}
 
-		ClientResponse response = null;
-		try {
-			response = setMediaType("application/gzip").post(
-					compressedByteArray);
-		} catch (IOException e) {
-			throw new ServiceException(
-					"Error while trying to execute POST method on resource: "
-							+ super.getURI(), e);
-		}
+		ClientResponse response = setMediaType("application/gzip").post(
+				compressedByteArray);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw new ServiceException("Error on your request. "
-					+ response.toString());
+			throw errorHandler(response,
+					"Error on your request. " + response.toString());
 		}
-		String resp = response.getStatus() + " - "
-				+ response.getClientResponseStatus().getReasonPhrase()
-				+ " location: " + response.getLocation();
-		return resp;
+
+		LoadConfirmation load = new LoadConfirmation();
+		load.setLocation(response.getLocation().toString());
+		return load;
 	}
 
 }
