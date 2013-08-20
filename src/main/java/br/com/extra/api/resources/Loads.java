@@ -1,7 +1,9 @@
 package br.com.extra.api.resources;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
@@ -76,19 +78,7 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 
 			// Tratamento para compactar o arquivo JSON
 			if (!Utils.isEmpty(products.getJsonFile())) {
-				// Criação do InputStream do Arquivo
-				FileInputStream stream = new FileInputStream(
-						products.getJsonFile());
-				byte[] buffer = new byte[8192];
-				int bytesRead;
-				// Conversão do arquivo em um Array de Bytes para ser compactado
-				// via GZip
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				while ((bytesRead = stream.read(buffer)) != -1) {
-					output.write(buffer, 0, bytesRead);
-				}
-				bytesToCompress = output.toByteArray();
-				// Tratamento para compactar a String que contém o JSON
+				bytesToCompress = getBytesFromFile(products.getJsonFile());
 			} else if (!Utils.isEmpty(products.getProductsJson())) {
 				bytesToCompress = products.getProductsJson().getBytes();
 				// Lançamento de Exceção caso não seja enviado nem o arquivo nem
@@ -112,6 +102,24 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 			throw e;
 		}
 		return compressedByteArray;
+	}
+
+	private byte[] getBytesFromFile(File file) throws FileNotFoundException,
+			IOException {
+		byte[] bytesToCompress;
+		// Criação do InputStream do Arquivo
+		FileInputStream stream = new FileInputStream(file);
+		byte[] buffer = new byte[8192];
+		int bytesRead;
+		// Conversão do arquivo em um Array de Bytes para ser compactado
+		// via GZip
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		while ((bytesRead = stream.read(buffer)) != -1) {
+			output.write(buffer, 0, bytesRead);
+		}
+		bytesToCompress = output.toByteArray();
+		// Tratamento para compactar a String que contém o JSON
+		return bytesToCompress;
 	}
 
 	/**
@@ -182,13 +190,18 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 	/**
 	 * {@inheritDoc}
 	 */
-	public LoadConfirmation loadProducts(ProductLoad products) throws ServiceException {
+	public LoadConfirmation loadProducts(ProductLoad products)
+			throws ServiceException {
 
 		setResource("/loads/products");
 
 		byte[] compressedByteArray;
 		try {
-			compressedByteArray = compress(products);
+			if (!Utils.isEmpty(products.getGzFile())) {
+				compressedByteArray = getBytesFromFile(products.getGzFile());
+			} else {
+				compressedByteArray = compress(products);
+			}
 		} catch (IOException e1) {
 			throw new ServiceException("Error while trying compact content.",
 					e1);
@@ -207,5 +220,4 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 		load.setLocation(response.getLocation().toString());
 		return load;
 	}
-
 }

@@ -23,7 +23,7 @@ public class Order extends Pojos {
 
 	private BigDecimal freightActualAmount;
 
-	private List<OrderItem> orderLines;
+	private List<OrderItem> orderItems;
 
 	private List<BillingInformation> billingInformations;
 
@@ -100,12 +100,12 @@ public class Order extends Pojos {
 		return freightActualAmount;
 	}
 
-	public void setOrderLines(List<OrderItem> orderLines) {
-		this.orderLines = orderLines;
+	public List<OrderItem> getOrderItems() {
+		return orderItems;
 	}
 
-	public List<OrderItem> getOrderLines() {
-		return orderLines;
+	public void setOrderItems(List<OrderItem> orderItems) {
+		this.orderItems = orderItems;
 	}
 
 	public void setBillingInformations(
@@ -205,7 +205,7 @@ public class Order extends Pojos {
 	public String getCustomerPhoneNumber() {
 		return customerPhoneNumber;
 	}
-	
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
