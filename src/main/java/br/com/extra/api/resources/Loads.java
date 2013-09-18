@@ -130,6 +130,19 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 		return ProductLoad.class;
 	}
 
+	public Boolean approveLoad(String importerInfoId) throws ServiceException {
+		validateSandboxRequest();
+		setResource("/loads/" + importerInfoId + "/approved");
+		ClientResponse response = put();
+
+		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
+				.getStatusCode()) {
+			throw errorHandler(response);
+		}
+
+		return true;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -212,8 +225,7 @@ public class Loads extends CoreAPIImpl<ProductLoad> implements LoadsResource {
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		LoadConfirmation load = new LoadConfirmation();

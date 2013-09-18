@@ -2,10 +2,14 @@ package br.com.extra.api.pojo.orders;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
+import org.joda.time.DateTime;
 
 public class Tracking implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private List<String> orderItemId;
 	private String controlPoint;
 	private String extraDescription;
 	private Date occurenceDt;
@@ -21,92 +25,100 @@ public class Tracking implements Serializable {
 	public Tracking() {
 	}
 
-	public void setControlPoint(String controlPoint) {
-		this.controlPoint = controlPoint;
-	}
-
-	public String getControlPoint() {
-		return controlPoint;
-	}
-
-	public void setExtraDescription(String extraDescription) {
-		this.extraDescription = extraDescription;
-	}
-
-	public String getExtraDescription() {
-		return extraDescription;
-	}
-
-	public void setOccurenceDt(Date occurenceDt) {
-		this.occurenceDt = occurenceDt;
-	}
-
-	public Date getOccurenceDt() {
-		return occurenceDt;
-	}
-
-	public void setCarrierName(String carrierName) {
-		this.carrierName = carrierName;
+	public String getAccessKeyNfe() {
+		return accessKeyNfe;
 	}
 
 	public String getCarrierName() {
 		return carrierName;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public String getControlPoint() {
+		return controlPoint;
 	}
 
-	public String getUrl() {
-		return url;
-	}
-
-	public void setObjectId(String objectId) {
-		this.objectId = objectId;
-	}
-
-	public String getObjectId() {
-		return objectId;
-	}
-
-	public void setOriginDeliveryId(String originDeliveryId) {
-		this.originDeliveryId = originDeliveryId;
-	}
-
-	public String getOriginDeliveryId() {
-		return originDeliveryId;
-	}
-
-	public void setAccessKeyNfe(String accessKeyNfe) {
-		this.accessKeyNfe = accessKeyNfe;
-	}
-
-	public String getAccessKeyNfe() {
-		return accessKeyNfe;
-	}
-
-	public void setLinkNfe(String linkNfe) {
-		this.linkNfe = linkNfe;
+	public String getExtraDescription() {
+		return extraDescription;
 	}
 
 	public String getLinkNfe() {
 		return linkNfe;
 	}
 
-	public void setSerieNfe(String serieNfe) {
-		this.serieNfe = serieNfe;
+	public String getNfe() {
+		return nfe;
+	}
+
+	public String getObjectId() {
+		return objectId;
+	}
+
+	public String getOccurenceDt() {
+		return new DateTime(occurenceDt).toString();
+	}
+
+	public String getOriginDeliveryId() {
+		return originDeliveryId;
 	}
 
 	public String getSerieNfe() {
 		return serieNfe;
 	}
 
+	public String getUrl() {
+		return url;
+	}
+
+	public void setAccessKeyNfe(String accessKeyNfe) {
+		this.accessKeyNfe = accessKeyNfe;
+	}
+
+	public void setCarrierName(String carrierName) {
+		this.carrierName = carrierName;
+	}
+
+	public void setControlPoint(String controlPoint) {
+		this.controlPoint = controlPoint;
+	}
+
+	public void setExtraDescription(String extraDescription) {
+		this.extraDescription = extraDescription;
+	}
+
+	public void setLinkNfe(String linkNfe) {
+		this.linkNfe = linkNfe;
+	}
+
 	public void setNfe(String nfe) {
 		this.nfe = nfe;
 	}
 
-	public String getNfe() {
-		return nfe;
+	public void setObjectId(String objectId) {
+		this.objectId = objectId;
+	}
+
+	public void setOccurenceDt(Date occurenceDt) {
+		this.occurenceDt = occurenceDt;
+	}
+
+	public List<String> getOrderItemId() {
+		return orderItemId;
+	}
+
+	public void setOrderItemId(List<String> orderItemId) {
+		this.orderItemId = orderItemId;
+	}
+
+	public void setOriginDeliveryId(String originDeliveryId) {
+		this.originDeliveryId = originDeliveryId;
+	}
+
+	public void setSerieNfe(String serieNfe) {
+		this.serieNfe = serieNfe;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 }

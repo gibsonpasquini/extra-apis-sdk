@@ -111,7 +111,7 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 						"Error handling response. ", e);
 			}
 		} else {
-			 throw errorHandler(response, response.toString());
+			throw errorHandler(response);
 		}
 
 		return sellerItems;
@@ -145,10 +145,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
-			String message = response.getStatus() + " - "
-					+ response.getClientResponseStatus().getReasonPhrase();
 
-			throw errorHandler(response, message);
+			throw errorHandler(response);
 
 		}
 
@@ -183,10 +181,8 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
-			String message = response.getStatus() + " - "
-					+ response.getClientResponseStatus().getReasonPhrase();
 
-			throw errorHandler(response, message);
+			throw errorHandler(response);
 		}
 
 		return sellerItem;
@@ -218,7 +214,7 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 						"Error handling response. ", e);
 			}
 		} else {
-			throw errorHandler(response, response.toString());
+			throw errorHandler(response);
 		}
 
 		return sellerItems;
@@ -228,28 +224,16 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public Boolean postSellerItem(SellerItem sellerItem) throws ServiceException {
+	public Boolean postSellerItem(SellerItem sellerItem)
+			throws ServiceException {
 
 		setResource("/sellerItems");
 
-		ClientResponse response = null;
-
-		Map<String, Object> bodyParams = new HashMap<String, Object>();
-		bodyParams.put("skuOrigin", sellerItem.getSkuOrigin());
-		bodyParams.put("skuId", sellerItem.getSkuId());
-		bodyParams.put("defaultPrice", sellerItem.getDefaultPrice());
-		bodyParams.put("salePrice", sellerItem.getSalePrice());
-		bodyParams.put("availableQuantity", sellerItem.getAvailableQuantity());
-		bodyParams.put("installmentId", sellerItem.getInstallmentId());
-		bodyParams.put("totalQuantity", sellerItem.getTotalQuantity());
-		bodyParams.put("crossDockingTime", sellerItem.getCrossDockingTime());
-
-		response = post(bodyParams);
+		ClientResponse response = post(sellerItem);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;
@@ -273,8 +257,7 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;
@@ -296,8 +279,7 @@ public class SellerItems extends CoreAPIImpl<SellerItem> implements
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;

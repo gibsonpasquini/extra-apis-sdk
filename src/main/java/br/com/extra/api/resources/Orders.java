@@ -22,6 +22,8 @@ import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.orders.Order;
 import br.com.extra.api.pojo.orders.OrderItem;
 import br.com.extra.api.pojo.orders.Tracking;
+import br.com.extra.api.pojo.orders.sandbox.OrderConfirmationSandbox;
+import br.com.extra.api.pojo.orders.sandbox.OrderSandbox;
 import br.com.extra.api.utils.Utils;
 
 import com.sun.jersey.api.client.ClientResponse;
@@ -88,7 +90,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 						"Error handling response. ", e);
 			}
 		} else {
-			throw errorHandler(response, response.toString());
+			throw errorHandler(response);
 		}
 
 		return orders;
@@ -165,6 +167,44 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	/**
 	 * {@inheritDoc}
 	 */
+	public Boolean approveOrder(String orderId) throws ServiceException {
+		validateSandboxRequest();
+		setResource("/orders/status/approved/" + orderId);
+		ClientResponse response = post();
+
+		if (response.getStatus() != ClientResponse.Status.CREATED
+				.getStatusCode()) {
+			throw errorHandler(response);
+		}
+
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public OrderConfirmationSandbox createOrder(OrderSandbox order)
+			throws ServiceException {
+		validateSandboxRequest();
+		setResource("/orders");
+		ClientResponse response = post(order);
+
+		if (response.getStatus() != ClientResponse.Status.CREATED
+				.getStatusCode()) {
+			throw errorHandler(response);
+		}
+
+		// Esse código deverá mudar pois o header correto é o location, que será
+		// recuperado através de response.getLocation()
+		List<String> list = response.getHeaders().get("Content-Location");
+		OrderConfirmationSandbox confirmation = new OrderConfirmationSandbox();
+		confirmation.setLocation(list.get(0));
+		return confirmation;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public List<Order> getApprovedOrders(String offset, String limit)
 			throws ServiceException {
 
@@ -232,9 +272,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
-			String message = response.getStatus() + " - "
-					+ response.getClientResponseStatus().getReasonPhrase();
-			throw errorHandler(response, message);
+			throw errorHandler(response);
 		}
 
 		return order;
@@ -333,8 +371,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 
 		if (response.getStatus() != ClientResponse.Status.NO_CONTENT
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;
@@ -356,8 +393,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;
@@ -380,8 +416,7 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw errorHandler(response,
-					"Error on your request. " + response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;
@@ -390,30 +425,16 @@ public class Orders extends CoreAPIImpl<Order> implements OrdersResource {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Boolean updateTracking(String orderId, String orderItemId,
-			Tracking tracking) throws ServiceException {
+	public Boolean updateTracking(String orderId, Tracking trackingUpdate)
+			throws ServiceException {
 
-		setResource("/orders/" + orderId + "/ordersItems/" + orderItemId
-				+ "/trackings");
+		setResource("/orders/" + orderId + "/ordersItems/trackings");
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("accessKeyNfe", tracking.getAccessKeyNfe());
-		params.put("carrierName", tracking.getCarrierName());
-		params.put("controlPoint", tracking.getControlPoint());
-		params.put("extraDescription", tracking.getExtraDescription());
-		params.put("linkNfe", tracking.getLinkNfe());
-		params.put("nfe", tracking.getNfe());
-		params.put("objectId", tracking.getObjectId());
-		params.put("occurenceDt", tracking.getOccurenceDt());
-		params.put("originDeliveryId", tracking.getOriginDeliveryId());
-		params.put("serieNfe", tracking.getSerieNfe());
-		params.put("url", tracking.getUrl());
-		ClientResponse response = post(params);
+		ClientResponse response = post(trackingUpdate);
 
 		if (response.getStatus() != ClientResponse.Status.CREATED
 				.getStatusCode()) {
-			throw errorHandler(response, "Error on your request. "
-					+ response.toString());
+			throw errorHandler(response);
 		}
 
 		return true;

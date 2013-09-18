@@ -84,13 +84,40 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Product getProduct(String productID) throws ServiceException {
+	public List<Product> getProduct(String productID) throws ServiceException {
 
 		if (!Utils.isEmpty(productID)) {
 			setResource("/products/" + productID);
 		} else {
 			throw new ServiceDataManipulationException(
 					"Parameter productId is mandatory.");
+		}
+
+		ClientResponse response = get();
+		List<Product> products = null;
+
+		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
+			try {
+				products = getListFromResponse(response);
+			} catch (IOException e) {
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
+			}
+		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
+				.getStatusCode()) {
+			throw errorHandler(response);
+		}
+
+		return products;
+	}
+
+	public Product getProductBySkuId(String skuID) throws ServiceException {
+
+		if (!Utils.isEmpty(skuID)) {
+			setResource("/products/sku/" + skuID);
+		} else {
+			throw new ServiceDataManipulationException(
+					"Parameter skuId is mandatory.");
 		}
 
 		ClientResponse response = get();
@@ -105,36 +132,7 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 			}
 		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
 				.getStatusCode()) {
-			String message = response.getStatus() + " - "
-					+ response.getClientResponseStatus().getReasonPhrase();
-			throw errorHandler(response, message);
-		}
-
-		return product;
-	}
-
-	public Product getProductBySkuId(String skuID) throws ServiceException {
-
-		if (!Utils.isEmpty(skuID)) {
-			setResource("/products/sku/" + skuID);
-		} else {
-			throw new ServiceDataManipulationException("Parameter skuId is mandatory.");
-		}
-
-		ClientResponse response = get();
-		Product product = null;
-
-		if (response.getStatus() == ClientResponse.Status.OK.getStatusCode()) {
-			try {
-				product = getObjectFromResponse(response);
-			} catch (IOException e) {
-				throw new ServiceDataManipulationException("Error handling response. ", e);
-			}
-		} else if (response.getStatus() != ClientResponse.Status.NOT_FOUND
-				.getStatusCode()) {
-			String message = response.getStatus() + " - "
-					+ response.getClientResponseStatus().getReasonPhrase();
-			throw errorHandler(response, message);
+			throw errorHandler(response);
 		}
 
 		return product;
@@ -185,7 +183,8 @@ public class Products extends CoreAPIImpl<Product> implements ProductsResource {
 			try {
 				products = getListFromResponse(response);
 			} catch (IOException e) {
-				throw new ServiceDataManipulationException("Error handling response. ", e);
+				throw new ServiceDataManipulationException(
+						"Error handling response. ", e);
 			}
 		}
 

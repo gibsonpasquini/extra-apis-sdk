@@ -7,6 +7,8 @@ import br.com.extra.api.core.exception.ServiceException;
 import br.com.extra.api.pojo.orders.Order;
 import br.com.extra.api.pojo.orders.OrderItem;
 import br.com.extra.api.pojo.orders.Tracking;
+import br.com.extra.api.pojo.orders.sandbox.OrderConfirmationSandbox;
+import br.com.extra.api.pojo.orders.sandbox.OrderSandbox;
 
 /**
  * 
@@ -45,6 +47,23 @@ public interface OrdersResource {
 	 */
 	public Boolean adjustItemsDeliveredDate(String orderId,
 			Date orderDateAdjusted, String reason, String originDeliveryID)
+			throws ServiceException;
+
+	/**
+	 * 
+	 * @param orderId
+	 * @return
+	 * @throws ServiceException
+	 */
+	public Boolean approveOrder(String orderId) throws ServiceException;
+
+	/**
+	 * 
+	 * @param order
+	 * @return
+	 * @throws ServiceException
+	 */
+	public OrderConfirmationSandbox createOrder(OrderSandbox order)
 			throws ServiceException;
 
 	/**
@@ -314,14 +333,14 @@ public interface OrdersResource {
 	 * 
 	 * @param orderId
 	 *            ID do pedido.
-	 * @param orderItemId
-	 *            ID do item do pedido.
+	 * @param trackingUpdate
+	 *            Objeto contendo informações sobre o tracking.
 	 * 
 	 * @return Confirmação da execução da operação.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public Boolean updateTracking(String orderId, String orderItemId,
-			Tracking tracking) throws ServiceException;
+	public Boolean updateTracking(String orderId, Tracking trackingUpdate)
+			throws ServiceException;
 }

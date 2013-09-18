@@ -35,7 +35,7 @@ public interface ProductsResource {
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public Product getProduct(String productID) throws ServiceException;
+	public List<Product> getProduct(String productID) throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que
@@ -43,10 +43,9 @@ public interface ProductsResource {
 	 * <p/>
 	 * GET /products/sku/{skuId}
 	 * 
-	 * @param skuID
-	 *            SKU ID do produto no Marketplace.
-	 * @return Produto consultado. Será retornado null caso o produto consultado
-	 *         não exista.
+	 * @param productID
+	 *            ID do produto no Marketplace.
+	 * @return Lista de produtos relacionado ao productId consultado.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.

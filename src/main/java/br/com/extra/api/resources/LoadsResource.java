@@ -21,10 +21,28 @@ import br.com.extra.api.pojo.loads.ProductLoadResponse;
 public interface LoadsResource {
 
 	/**
+	 * Método utilizado para aprovar uma carga do produtos.<br/>
+	 * Esse método é utilizado apenas em Sandbox. Existe uma validação para isso
+	 * na chamada ao serviço via SDK e também uma validação de políticas no API
+	 * Gateway.
+	 * 
+	 * <p/>
+	 * PUT /loads/{importerInfoId}/approved
+	 * 
+	 * @param importerInfoId
+	 *            ID da operação de importação.
+	 * @return Confirmação da execução da operação.
+	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
+	 */
+	public Boolean approveLoad(String importerInfoId) throws ServiceException;
+
+	/**
 	 * Método utilizado para consultar o status da carga dos produtos.
 	 * 
 	 * <p/>
-	 * GET /loads/products/{importerInfoId
+	 * GET /loads/products/{importerInfoId}
 	 * 
 	 * @param importerInfoId
 	 *            ID da operação de importação.
@@ -69,6 +87,7 @@ public interface LoadsResource {
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public LoadConfirmation loadProducts(ProductLoad products) throws ServiceException;
+	public LoadConfirmation loadProducts(ProductLoad products)
+			throws ServiceException;
 
 }

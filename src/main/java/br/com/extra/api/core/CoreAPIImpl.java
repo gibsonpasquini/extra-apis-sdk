@@ -45,7 +45,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 * Endereço principal do serviço.<br/>
 	 * Pode ser o endereço de Sandbox ou de Produção.
 	 */
-	private String host;
+	private Hosts host;
 
 	/**
 	 * Token que identifica a Aplicação que está efetuando a chamada aos
@@ -58,6 +58,12 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 * efetuar chamadas aos recursos disponibilizados através da API.
 	 */
 	private String authToken;
+
+	/**
+	 * Objeto utilizado para receber o conteúdo que será utilizado como corpo do
+	 * Request
+	 */
+	private Object requestBody = null;
 
 	/**
 	 * Nome do serviço que será invocado.
@@ -85,10 +91,25 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 *            Token de Autenticação.
 	 */
 	public CoreAPIImpl(Hosts host, AppToken appToken, AuthToken authToken) {
-		this.host = host.toString();
+		this.host = host;
 		this.appToken = appToken.getCode();
 		this.authToken = authToken.getCode();
 		queryParams = new MultivaluedMapImpl();
+	}
+
+	/**
+	 * Método utilizado para construir o Client do serviço.
+	 * 
+	 * @return WebResource que executa a chamada ao serviço
+	 */
+	private WebResource build() {
+		Client client = Client.create();
+		// Inclusão dos headers de requisição
+		client.addFilter(this.getFilter());
+		// Criação do serviço
+		WebResource webResource = client.resource(host + resource);
+
+		return webResource;
 	}
 
 	/**
@@ -122,6 +143,31 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 		String type = Utils.isEmpty(mediaType) ? MediaType.APPLICATION_JSON_TYPE
 				.toString() : this.mediaType;
 		return type;
+	}
+
+	/**
+	 * Método utilizado para fazer o tratamento de erros
+	 * 
+	 * @param response
+	 *            Resposta da requisição.
+	 * @param message
+	 *            Mensagem que será retornada na exceção.
+	 * @throws ServiceException
+	 *             Exceção que deverá ser lançada.
+	 */
+	protected ServiceException errorHandler(ClientResponse response) {
+		String message = "Error on your request. " + response.toString();
+		if (response.getStatus() >= 400 && response.getStatus() < 500) {
+			if (response.getStatus() == 422) {
+				message = "Error on your request. " + response.getEntity(String.class);
+			}
+			return new ServiceBusinessException(response.getStatus(), message);
+		} else if (response.getStatus() >= 500) {
+			return new ServiceInfrastructureException(response.getStatus(),
+					message);
+		} else {
+			return new ServiceException(response.getStatus(), message);
+		}
 	}
 
 	/**
@@ -184,24 +230,19 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	protected abstract Class<T> getPojoClass();
 
 	/**
-	 * Método utilizado para fazer o tratamento de erros
+	 * Método utilizado para validar se a chamada realmente está sendo realizada
+	 * para Sandbox
 	 * 
-	 * @param response
-	 *            Resposta da requisição.
-	 * @param message
-	 *            Mensagem que será retornada na exceção.
-	 * @throws ServiceException
-	 *             Exceção que deverá ser lançada.
+	 * @throws ServiceInfrastructureException
+	 *             Exceção lançada caso a chamada seja feita para o Host de
+	 *             Produção.
 	 */
-	protected ServiceException errorHandler(ClientResponse response, String message)
-			{
-		if (response.getStatus() >= 400 && response.getStatus() < 500) {
-			return new ServiceBusinessException(response.getStatus(), message);
-		} else if (response.getStatus() >= 500) {
-			return new ServiceInfrastructureException(response.getStatus(),
-					message);
-		} else {
-			return new ServiceException(response.getStatus(), message);
+	protected void validateSandboxRequest()
+			throws ServiceInfrastructureException {
+		if (getHost() != Hosts.SANDBOX) {
+			throw new ServiceInfrastructureException(
+					403,
+					"You are not allowed to perform this operation in Production Environment. POST /orders is only allowed in Sandbox.");
 		}
 	}
 
@@ -212,17 +253,20 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 */
 	public ClientResponse get() {
 
-		Client client = Client.create();
-		// Headers da requisição
-		client.addFilter(getFilter());
-		// Criação do serviço
-		WebResource webResource = client.resource(host + resource).queryParams(
-				this.queryParams);
+		WebResource webResource = build().queryParams(this.queryParams);
 		// Invocação do serviço
 		ClientResponse response = webResource.accept(getMediaType()).get(
 				ClientResponse.class);
-
 		return response;
+	}
+
+	/**
+	 * Retorna o host que está sendo utilizado.
+	 * 
+	 * @return Host.
+	 */
+	public Hosts getHost() {
+		return this.host;
 	}
 
 	/**
@@ -231,7 +275,23 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 * @return Endereço completo do serviço.
 	 */
 	public String getURI() {
-		return this.host + this.resource;
+		return this.host.toString() + this.resource;
+	}
+
+	/**
+	 * Método POST sem parâmetros.
+	 * 
+	 * @return Objeto contendo o retorno da requisição.
+	 * @throws ServiceDataManipulationException
+	 *             Exceção lançada caso haja problemas na manipulação dos dados
+	 *             da chamada.
+	 */
+	public ClientResponse post() throws ServiceDataManipulationException {
+		WebResource webResource = build();
+		ClientResponse response = webResource.type(getMediaType()).post(
+				ClientResponse.class);
+
+		return response;
 	}
 
 	/**
@@ -248,28 +308,42 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	public ClientResponse post(Object params)
 			throws ServiceDataManipulationException {
 
-		Client client = Client.create();
-		// Inclusão dos headers de requisição
-		client.addFilter(this.getFilter());
-		// Criação do serviço
-		WebResource webResource = client.resource(host + resource);
+		WebResource webResource = build();
 
-		Object input = null;
-		if (params instanceof Map) {
+		if (!(params instanceof byte[])) {
 			// Criação do objeto JSON com os parâmetros quando for enviado um
 			// Mapa
 			try {
-				input = new ObjectMapper().writeValueAsString(params);
+				requestBody = new ObjectMapper().writeValueAsString(params);
 			} catch (IOException e) {
 				throw new ServiceDataManipulationException(e);
 			}
 		} else {
-			input = params;
+			requestBody = params;
 		}
 
 		// Invocação do serviço
 		ClientResponse response = webResource.type(getMediaType()).post(
-				ClientResponse.class, input);
+				ClientResponse.class, requestBody);
+
+		return response;
+	}
+
+	/**
+	 * Método PUT sem parâmetros.
+	 * 
+	 * @param params
+	 *            Mapa contendo os parâmetros que serão incluídos no corpo da
+	 *            requisição.
+	 * @return Objeto contendo o retorno da requisição.
+	 * @throws ServiceDataManipulationException
+	 *             Exceção lançada caso haja problemas na manipulação dos dados
+	 *             da chamada.
+	 */
+	public ClientResponse put() throws ServiceDataManipulationException {
+		WebResource webResource = build();
+		ClientResponse response = webResource.type(getMediaType())
+				.accept(getMediaType()).put(ClientResponse.class);
 
 		return response;
 	}
@@ -288,21 +362,16 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	public ClientResponse put(Map<String, Object> params)
 			throws ServiceDataManipulationException {
 
-		Client client = Client.create();
-		// Headers da requisição
-		client.addFilter(getFilter());
-		// Criação do serviço
-		WebResource webResource = client.resource(host + resource);
+		WebResource webResource = build();
 		// Criação do objeto JSON com os parâmetros
-		String in;
 		try {
-			in = new ObjectMapper().writeValueAsString(params);
+			requestBody = new ObjectMapper().writeValueAsString(params);
 		} catch (IOException e) {
 			throw new ServiceDataManipulationException(e);
 		}
 		// Invocação do serviço
 		ClientResponse response = webResource.type(getMediaType())
-				.accept(getMediaType()).put(ClientResponse.class, in);
+				.accept(getMediaType()).put(ClientResponse.class, requestBody);
 
 		return response;
 
