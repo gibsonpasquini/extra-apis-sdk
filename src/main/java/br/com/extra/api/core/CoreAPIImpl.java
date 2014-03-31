@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -41,6 +42,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
  */
 public abstract class CoreAPIImpl<T extends Pojos> {
 
+	private static final Logger logger = Logger.getLogger(CoreAPIImpl.class);
 	/**
 	 * Endereço principal do serviço.<br/>
 	 * Pode ser o endereço de Sandbox ou de Produção.
@@ -63,7 +65,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 * Objeto utilizado para receber o conteúdo que será utilizado como corpo do
 	 * Request
 	 */
-	private Object requestBody = null;
+	private Object requestBody;
 
 	/**
 	 * Nome do serviço que será invocado.
@@ -127,7 +129,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 						.getHeaders();
 				headers.add("nova-auth-token", authToken);
 				headers.add("nova-app-token", appToken);
-				headers.add("Host", "sandbox.extra.com.br");
+				headers.remove("Host");
 				return getNext().handle(clientRequest);
 			}
 		};
@@ -156,17 +158,23 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 *             Exceção que deverá ser lançada.
 	 */
 	protected ServiceException errorHandler(ClientResponse response) {
-		String message = "Error on your request. " + response.toString();
+		String message = "Error on your request: " + response.toString()
+				+ ". Reason: " + response.getEntity(String.class);
 		if (response.getStatus() >= 400 && response.getStatus() < 500) {
-			if (response.getStatus() == 422) {
-				message = "Error on your request. " + response.getEntity(String.class);
-			}
-			return new ServiceBusinessException(response.getStatus(), message);
+			ServiceException ex = new ServiceBusinessException(
+					response.getStatus(), message);
+			logger.error(ex);
+			return ex;
 		} else if (response.getStatus() >= 500) {
-			return new ServiceInfrastructureException(response.getStatus(),
-					message);
+			ServiceException ex = new ServiceInfrastructureException(
+					response.getStatus(), message);
+			logger.error(ex);
+			return ex;
 		} else {
-			return new ServiceException(response.getStatus(), message);
+			ServiceException ex = new ServiceException(response.getStatus(),
+					message);
+			logger.error(ex);
+			return ex;
 		}
 	}
 
@@ -239,7 +247,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 */
 	protected void validateSandboxRequest()
 			throws ServiceInfrastructureException {
-		if (getHost() != Hosts.SANDBOX) {
+		if (getHost() != Hosts.SANDBOX && getHost() != Hosts.SHLG) {
 			throw new ServiceInfrastructureException(
 					403,
 					"You are not allowed to perform this operation in Production Environment. POST /orders is only allowed in Sandbox.");
@@ -254,9 +262,15 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	public ClientResponse get() {
 
 		WebResource webResource = build().queryParams(this.queryParams);
+		if (logger.isDebugEnabled()) {
+			logger.debug(webResource + ". nova-app-token: " + this.appToken
+					+ ", nova-auth-token: " + this.authToken);
+		}
 		// Invocação do serviço
 		ClientResponse response = webResource.accept(getMediaType()).get(
 				ClientResponse.class);
+		this.queryParams.clear();
+		this.mediaType = null;
 		return response;
 	}
 
@@ -290,7 +304,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 		WebResource webResource = build();
 		ClientResponse response = webResource.type(getMediaType()).post(
 				ClientResponse.class);
-
+		this.mediaType = null;
 		return response;
 	}
 
@@ -321,11 +335,16 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 		} else {
 			requestBody = params;
 		}
+		if (logger.isDebugEnabled()) {
+			logger.debug(webResource + ". nova-app-token: " + this.appToken
+					+ ", nova-auth-token: " + this.authToken);
+			logger.debug(requestBody);
+		}
 
 		// Invocação do serviço
 		ClientResponse response = webResource.type(getMediaType()).post(
 				ClientResponse.class, requestBody);
-
+		this.mediaType = null;
 		return response;
 	}
 
@@ -344,7 +363,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 		WebResource webResource = build();
 		ClientResponse response = webResource.type(getMediaType())
 				.accept(getMediaType()).put(ClientResponse.class);
-
+		this.mediaType = null;
 		return response;
 	}
 
@@ -370,9 +389,14 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 			throw new ServiceDataManipulationException(e);
 		}
 		// Invocação do serviço
+		if (logger.isDebugEnabled()) {
+			logger.debug(webResource + ". nova-app-token: " + this.appToken
+					+ ", nova-auth-token: " + this.authToken);
+			logger.debug(requestBody);
+		}
 		ClientResponse response = webResource.type(getMediaType())
 				.accept(getMediaType()).put(ClientResponse.class, requestBody);
-
+		this.mediaType = null;
 		return response;
 
 	}
