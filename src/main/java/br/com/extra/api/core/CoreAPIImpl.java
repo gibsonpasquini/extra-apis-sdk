@@ -351,9 +351,6 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	/**
 	 * Método PUT sem parâmetros.
 	 * 
-	 * @param params
-	 *            Mapa contendo os parâmetros que serão incluídos no corpo da
-	 *            requisição.
 	 * @return Objeto contendo o retorno da requisição.
 	 * @throws ServiceDataManipulationException
 	 *             Exceção lançada caso haja problemas na manipulação dos dados

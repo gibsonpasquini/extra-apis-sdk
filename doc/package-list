@@ -1,9 +1,11 @@
 br.com.extra.api.core
 br.com.extra.api.core.exception
 br.com.extra.api.pojo
-br.com.extra.api.pojo.loads
-br.com.extra.api.pojo.orders
-br.com.extra.api.pojo.products
-br.com.extra.api.pojo.sellerItems
-br.com.extra.api.resources
+br.com.extra.api.pojo.v1.categories
+br.com.extra.api.pojo.v1.loads
+br.com.extra.api.pojo.v1.orders
+br.com.extra.api.pojo.v1.orders.sandbox
+br.com.extra.api.pojo.v1.products
+br.com.extra.api.pojo.v1.sellerItems
+br.com.extra.api.resources.v1
 br.com.extra.api.utils

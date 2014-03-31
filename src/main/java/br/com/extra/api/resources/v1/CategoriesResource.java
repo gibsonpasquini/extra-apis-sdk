@@ -26,7 +26,7 @@ public interface CategoriesResource {
 	 * <p/>
 	 * GET /categories/{levelId}
 	 * 
-	 * @param levelId
+	 * @param levelID
 	 *            ID da categoria.
 	 * @return Categoria consultada. Será retornado nulo caso a categoria não
 	 *         exista (404 - Not Found).
@@ -34,7 +34,7 @@ public interface CategoriesResource {
 	 *             Exceção lançada caso ocorra algum erro na execução do
 	 *             serviço.
 	 */
-	public Category getCategory(String levelId) throws ServiceException;
+	public Category getCategory(String levelID) throws ServiceException;
 
 	/**
 	 * Método utilizado para realizar a chamada ao WebService Restful que

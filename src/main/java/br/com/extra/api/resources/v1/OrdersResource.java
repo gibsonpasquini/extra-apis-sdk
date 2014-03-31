@@ -50,18 +50,33 @@ public interface OrdersResource {
 			throws ServiceException;
 
 	/**
+	 * Método utilizado para aprovar um pedido.<br/>
+	 * Esse método é utilizado apenas em Sandbox. Existe uma validação para isso
+	 * na chamada ao serviço via SDK e também uma validação de políticas de
+	 * acesso à API.
 	 * 
 	 * @param orderId
-	 * @return
+	 *            ID do pedido que será aprovado.
+	 * @return Confirmação de aprovação.
 	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public Boolean approveOrder(String orderId) throws ServiceException;
 
 	/**
+	 * Método utilizado para criar um pedido.<br/>
+	 * Esse método é utilizado apenas em Sandbox. Existe uma validação para isso
+	 * na chamada ao serviço via SDK e também uma validação de políticas de
+	 * acesso à API.
 	 * 
 	 * @param order
-	 * @return
+	 *            Objeto contendo as informações do pedido
+	 * @return Confirmação de execução da operação contendo o ID do pedido
+	 *         gerado.
 	 * @throws ServiceException
+	 *             Exceção lançada caso ocorra algum erro na execução do
+	 *             serviço.
 	 */
 	public OrderConfirmationSandbox createOrder(OrderSandbox order)
 			throws ServiceException;

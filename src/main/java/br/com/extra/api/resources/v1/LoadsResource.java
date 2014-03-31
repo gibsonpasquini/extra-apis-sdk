@@ -23,8 +23,8 @@ public interface LoadsResource {
 	/**
 	 * Método utilizado para aprovar uma carga do produtos.<br/>
 	 * Esse método é utilizado apenas em Sandbox. Existe uma validação para isso
-	 * na chamada ao serviço via SDK e também uma validação de políticas no API
-	 * Gateway.
+	 * na chamada ao serviço via SDK e também uma validação de políticas de
+	 * acesso à API.
 	 * 
 	 * <p/>
 	 * PUT /loads/{importerInfoId}/approved
@@ -37,12 +37,12 @@ public interface LoadsResource {
 	 *             serviço.
 	 */
 	public Boolean approveLoad(String importerInfoId) throws ServiceException;
-	
+
 	/**
 	 * Método utilizado para cancelar uma carga do produtos.<br/>
 	 * Esse método é utilizado apenas em Sandbox. Existe uma validação para isso
-	 * na chamada ao serviço via SDK e também uma validação de políticas no API
-	 * Gateway.
+	 * na chamada ao serviço via SDK e também uma validação de políticas de
+	 * acesso à API.
 	 * 
 	 * <p/>
 	 * PUT /loads/{importerInfoId}/canceled

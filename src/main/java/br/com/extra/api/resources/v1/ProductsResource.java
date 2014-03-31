@@ -43,8 +43,8 @@ public interface ProductsResource {
 	 * <p/>
 	 * GET /products/sku/{skuId}
 	 * 
-	 * @param productID
-	 *            ID do produto no Marketplace.
+	 * @param skuID
+	 *            SKU ID do produto no Marketplace.
 	 * @return Lista de produtos relacionado ao productId consultado.
 	 * @throws ServiceException
 	 *             Exceção lançada caso ocorra algum erro na execução do
