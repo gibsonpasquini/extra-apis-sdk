@@ -247,7 +247,7 @@ public abstract class CoreAPIImpl<T extends Pojos> {
 	 */
 	protected void validateSandboxRequest()
 			throws ServiceInfrastructureException {
-		if (getHost() != Hosts.SANDBOX && getHost() != Hosts.SHLG) {
+		if (Hosts.SANDBOX != getHost()) {
 			throw new ServiceInfrastructureException(
 					403,
 					"You are not allowed to perform this operation in Production Environment. POST /orders is only allowed in Sandbox.");
